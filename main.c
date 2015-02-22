@@ -10,8 +10,7 @@ int main()
 	char **name_list_ptr;
 
 	error = NULL;
-	connection = dbus_g_bus_get(DBUS_BUS_SESSION,
-	                            &error);
+	connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
 	if (connection == NULL)
 	{
 		g_printerr("Failed to open connection to bus: %s\n", error->message);
