@@ -1,16 +1,15 @@
 #include <stdlib.h>          // for exit()
-#include <dbus/dbus-glib.h>  // for dbus_g_*
+#include <gio/gio.h>		// for g_dbus_*
 
 int main()
 {
-	DBusGConnection *connection;
+	GDBusConnection *connection;
 	GError *error;
-	DBusGProxy *proxy;
-	char **name_list;
-	char **name_list_ptr;
+	GDBusProxy *proxy;
 
 	error = NULL;
-	connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+	connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+
 	if (connection == NULL)
 	{
 		g_printerr("Failed to open connection to bus: %s\n", error->message);
@@ -19,21 +18,32 @@ int main()
 	}
 
 	// Create a proxy object for the "bus driver" (name "org.freedesktop.DBus")
-
-	proxy = dbus_g_proxy_new_for_name(connection,
-	                                  "org.freedesktop.DBus",
-	                                  "/org/freedesktop/DBus",
-	                                  "org.freedesktop.DBus");
+	proxy = g_dbus_proxy_new_sync( connection,
+	                               G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+	                               NULL,                     // DBus interface
+	                               "org.freedesktop.DBus",   // Name
+	                               "/org/freedesktop/DBus",  // path
+	                               "org.freedesktop.DBus",   // interface
+	                               NULL,                     // GCancellable
+	                               &error );
 
 	// Call ListNames method, wait for reply
 	error = NULL;
-	if ( !dbus_g_proxy_call(proxy, "ListNames", &error, G_TYPE_INVALID,
-	                        G_TYPE_STRV, &name_list, G_TYPE_INVALID) )
+	GVariant* gvp = g_dbus_proxy_call_sync( proxy,
+	                                        "ListNames",            // method name
+	                                        g_variant_new("()"),    // parameters to method
+	                                        G_DBUS_CALL_FLAGS_NONE, // flags
+	                                        -1,	                    // timeout
+	                                        NULL,                   // cancellable
+	                                        &error );
+
+	// Handle error
+	if ( error != NULL )
 	{
 		// Just do demonstrate remote exceptions versus regular GError
-		if ( error->domain == DBUS_GERROR && error->code == DBUS_GERROR_REMOTE_EXCEPTION )
+		if ( error->domain == G_DBUS_ERROR && g_dbus_error_is_remote_error(error) )
 			g_printerr("Caught remote method exception %s: %s",
-			           dbus_g_error_get_name(error),
+			           g_dbus_error_get_remote_error(error),
 			           error->message);
 		else
 			g_printerr("Error: %s\n", error->message);
@@ -42,16 +52,20 @@ int main()
 	}
 
 	// Print the results
+	GVariant * array_of_strings = g_variant_get_child_value(gvp, 0);
 
 	g_print("Names on the message bus:\n");
 
-	for (name_list_ptr = name_list; *name_list_ptr; name_list_ptr++)
+	for (size_t count = 0; count < g_variant_n_children(array_of_strings); ++count)
 	{
-		g_print("  %s\n", *name_list_ptr);
+		g_print("  %s\n", g_variant_get_string(g_variant_get_child_value(array_of_strings, count), NULL) );
 	}
-	g_strfreev(name_list);
 
+	g_variant_unref(array_of_strings);
+	g_variant_unref(gvp);
 	g_object_unref(proxy);
+	error = NULL;
+	g_dbus_connection_close_sync(connection, NULL, &error );
 
 	return 0;
 }
