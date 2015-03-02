@@ -21,9 +21,9 @@ int main()
 	// Create a proxy object for the "bus driver" (name "org.freedesktop.DBus")
 
 	proxy = dbus_g_proxy_new_for_name(connection,
-	                                  DBUS_SERVICE_DBUS,
-	                                  DBUS_PATH_DBUS,
-	                                  DBUS_INTERFACE_DBUS);
+	                                  "org.freedesktop.DBus",
+	                                  "/org/freedesktop/DBus",
+	                                  "org.freedesktop.DBus");
 
 	// Call ListNames method, wait for reply
 	error = NULL;
