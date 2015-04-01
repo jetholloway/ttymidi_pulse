@@ -6,7 +6,7 @@
 GDBusConnection* get_pulseaudio_bus()
 {
 	GError *error = NULL;
-	const char* pulse_server_string;
+	const char* pulse_server_string = NULL;
 	GDBusConnection *answer;
 
 	// Try environment variable
@@ -27,8 +27,7 @@ GDBusConnection* get_pulseaudio_bus()
 		                                           NULL,
 		                                           &error );
 
-		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy,
-		                                                  "Address" );
+		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
 
 		pulse_server_string = g_variant_get_string(gvp, NULL);
 
@@ -45,10 +44,10 @@ GDBusConnection* get_pulseaudio_bus()
 
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
-	                                        G_DBUS_CONNECTION_FLAGS_NONE,
-	                                        NULL,  // GDBusAuthObserver
-	                                        NULL,  // GCancellable
-	                                        &error );
+	                                                 G_DBUS_CONNECTION_FLAGS_NONE,
+	                                                 NULL,  // GDBusAuthObserver
+	                                                 NULL,  // GCancellable
+	                                                 &error );
 
 
 	return answer;
@@ -86,7 +85,7 @@ int main()
 	                                        "ListNames",            // method name
 	                                        g_variant_new("()"),    // parameters to method
 	                                        G_DBUS_CALL_FLAGS_NONE, // flags
-	                                        -1,	                    // timeout
+	                                        -1,                     // timeout
 	                                        NULL,                   // cancellable
 	                                        &error );
 
