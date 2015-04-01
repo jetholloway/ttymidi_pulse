@@ -50,7 +50,6 @@ GDBusConnection* get_pulseaudio_bus()
 	                                        NULL,  // GCancellable
 	                                        &error );
 
-	error = NULL;
 
 	return answer;
 }
