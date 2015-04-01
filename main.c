@@ -44,7 +44,7 @@ GDBusConnection* get_pulseaudio_bus()
 
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
-	                                                 G_DBUS_CONNECTION_FLAGS_NONE,
+	                                                 G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
 	                                                 NULL,  // GDBusAuthObserver
 	                                                 NULL,  // GCancellable
 	                                                 &error );
