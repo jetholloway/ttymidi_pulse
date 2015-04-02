@@ -3,6 +3,18 @@
 #include <string.h>
 #include <gio/gio.h>		// for g_dbus_*
 
+bool print_errors( GError *e )
+{
+	if ( e != NULL )
+	{
+		printf("Error: %s\n",e->message);
+		g_error_free(e);
+		return 1;
+	}
+	else
+		return 0;
+}
+
 GDBusConnection* get_pulseaudio_bus()
 {
 	GError *error = NULL;
@@ -16,8 +28,8 @@ GDBusConnection* get_pulseaudio_bus()
 	{
 		// Otherwise, try using DBus
 		GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+		print_errors(error);
 
-		error = NULL;
 		GDBusProxy *proxy = g_dbus_proxy_new_sync( connection,
 		                                           G_DBUS_PROXY_FLAGS_NONE,
 		                                           NULL,  // DBus interface
@@ -26,12 +38,14 @@ GDBusConnection* get_pulseaudio_bus()
 		                                           "org.PulseAudio1.ServerLookup1",   // interface
 		                                           NULL,
 		                                           &error );
+		print_errors(error);
 
 		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
 
 		pulse_server_string = g_variant_get_string(gvp, NULL);
 
 		g_dbus_connection_close_sync(connection, NULL, &error );
+		print_errors(error);
 	}
 
 	if ( pulse_server_string == NULL )
@@ -48,6 +62,7 @@ GDBusConnection* get_pulseaudio_bus()
 	                                                 NULL,  // GDBusAuthObserver
 	                                                 NULL,  // GCancellable
 	                                                 &error );
+	print_errors(error);
 
 
 	return answer;
@@ -56,18 +71,12 @@ GDBusConnection* get_pulseaudio_bus()
 int main()
 {
 	GDBusConnection *connection;
-	GError *error;
+	GError *error = NULL;
 	GDBusProxy *proxy;
 
-	error = NULL;
 	connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
-
-	if (connection == NULL)
-	{
-		g_printerr("Failed to open connection to bus: %s\n", error->message);
-		g_error_free(error);
+	if ( print_errors(error) )
 		exit(1);
-	}
 
 	// Create a proxy object for the "bus driver" (name "org.freedesktop.DBus")
 	proxy = g_dbus_proxy_new_sync( connection,
@@ -78,9 +87,9 @@ int main()
 	                               "org.freedesktop.DBus",   // interface
 	                               NULL,                     // GCancellable
 	                               &error );
+	print_errors(error);
 
 	// Call ListNames method, wait for reply
-	error = NULL;
 	GVariant* gvp = g_dbus_proxy_call_sync( proxy,
 	                                        "ListNames",            // method name
 	                                        g_variant_new("()"),    // parameters to method
@@ -88,20 +97,8 @@ int main()
 	                                        -1,                     // timeout
 	                                        NULL,                   // cancellable
 	                                        &error );
-
-	// Handle error
-	if ( error != NULL )
-	{
-		// Just do demonstrate remote exceptions versus regular GError
-		if ( error->domain == G_DBUS_ERROR && g_dbus_error_is_remote_error(error) )
-			g_printerr("Caught remote method exception %s: %s",
-			           g_dbus_error_get_remote_error(error),
-			           error->message);
-		else
-			g_printerr("Error: %s\n", error->message);
-		g_error_free(error);
+	if ( print_errors(error) )
 		exit(1);
-	}
 
 	// Print the results
 	GVariant * array_of_strings = g_variant_get_child_value(gvp, 0);
@@ -116,8 +113,8 @@ int main()
 	g_variant_unref(array_of_strings);
 	g_variant_unref(gvp);
 	g_object_unref(proxy);
-	error = NULL;
 	g_dbus_connection_close_sync(connection, NULL, &error );
+	print_errors(error);
 
 	return 0;
 }
