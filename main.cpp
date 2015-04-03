@@ -71,7 +71,7 @@ GDBusConnection* get_pulseaudio_bus()
 
 GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
 {
-	GVariant *temp_gv, *temp_gv2, *answer;
+	GVariant *temp_tva, *temp_va, *temp_a;
 	GDBusProxy *proxy;
 	GError *error = NULL;
 
@@ -93,7 +93,7 @@ GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
 	// temp_gv is a tuple, of a single variant, of an array, of object paths
 	//   Note that for some filthy reason, you are able to use a floating
 	// GVariant for the parameters.
-	temp_gv = g_dbus_proxy_call_sync(
+	temp_tva = g_dbus_proxy_call_sync(
 	          proxy,
 	          "Get",                  // Method name
 	          g_variant_new("(ss)","org.PulseAudio.Core1",get_method_name), // Params
@@ -105,12 +105,12 @@ GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
 	g_object_unref(proxy);
 
 	// extract the array out of the tuple of variant
-	temp_gv2 = g_variant_get_child_value(temp_gv,0);
-	answer = g_variant_get_variant(temp_gv2);
-	g_variant_unref(temp_gv2);
-	g_variant_unref(temp_gv);
+	temp_va = g_variant_get_child_value(temp_tva,0);
+	temp_a = g_variant_get_variant(temp_va);
+	g_variant_unref(temp_va);
+	g_variant_unref(temp_tva);
 
-	return answer;
+	return temp_a;
 }
 
 GVariant* get_clients( GDBusConnection *conn )
