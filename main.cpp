@@ -1,7 +1,9 @@
-#include <stdlib.h>          // for exit()
-#include <stdio.h>
-#include <string.h>
+#include <cstdlib>          // for exit()
+#include <cstdio>
+#include <cstring>
 #include <gio/gio.h>		// for g_dbus_*
+
+using namespace std;
 
 bool print_errors( GError *e )
 {
