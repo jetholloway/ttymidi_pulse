@@ -165,7 +165,9 @@ int main()
 
 	for (size_t count = 0; count < g_variant_n_children(array_of_strings); ++count)
 	{
-		g_print("  %s\n", g_variant_get_string(g_variant_get_child_value(array_of_strings, count), NULL) );
+		GVariant *child = g_variant_get_child_value(array_of_strings, count);
+		g_print("  %s\n", g_variant_get_string(child, NULL));
+		g_variant_unref(child);
 	}
 
 	g_variant_unref(array_of_strings);
