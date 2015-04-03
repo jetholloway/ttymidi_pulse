@@ -64,8 +64,66 @@ GDBusConnection* get_pulseaudio_bus()
 	                                                 &error );
 	print_errors(error);
 
+	return answer;
+}
+
+GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
+{
+	GVariant *temp_gv, *temp_gv2, *answer;
+	GDBusProxy *proxy;
+	GError *error = NULL;
+
+	// Interface Proxy
+	//   Note: we are not connected to a bus, but a direct peer-to-peer
+	// connection, so the bus name is NULL
+	proxy = g_dbus_proxy_new_sync(
+	        conn,
+	        G_DBUS_PROXY_FLAGS_NONE,
+	        NULL,                              // Interface info struct (opt.)
+	        NULL,                              // Bus Name
+	        "/org/pulseaudio/core1",           // Path of object
+	        "org.freedesktop.DBus.Properties", // Interface
+	        NULL,                              // GCancellable
+	        &error );
+	print_errors(error);
+
+	// Array of paths
+	// temp_gv is a tuple, of a single variant, of an array, of object paths
+	//   Note that for some filthy reason, you are able to use a floating
+	// GVariant for the parameters.
+	temp_gv = g_dbus_proxy_call_sync(
+	          proxy,
+	          "Get",                  // Method name
+	          g_variant_new("(ss)","org.PulseAudio.Core1",get_method_name), // Params
+	          G_DBUS_CALL_FLAGS_NONE,
+	          -1,                     // Timeout
+	          NULL,                   // Cancellable
+	          &error );
+	print_errors(error);
+	g_object_unref(proxy);
+
+	// extract the array out of the tuple of variant
+	temp_gv2 = g_variant_get_child_value(temp_gv,0);
+	answer = g_variant_get_variant(temp_gv2);
+	g_variant_unref(temp_gv2);
+	g_variant_unref(temp_gv);
 
 	return answer;
+}
+
+GVariant* get_clients( GDBusConnection *conn )
+{
+	return get_things( conn, "Clients" );
+}
+
+GVariant* get_sinks( GDBusConnection *conn )
+{
+	return get_things( conn, "Sinks" );
+}
+
+GVariant* get_playback_streams( GDBusConnection *conn )
+{
+	return get_things( conn, "PlaybackStreams" );
 }
 
 int main()
