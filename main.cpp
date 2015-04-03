@@ -1,6 +1,8 @@
 #include <cstdlib>          // for exit()
 #include <cstdio>
 #include <cstring>
+#include <string>
+#include <vector>
 #include <gio/gio.h>		// for g_dbus_*
 
 using namespace std;
@@ -56,7 +58,7 @@ GDBusConnection* get_pulseaudio_bus()
 		exit(1);
 	}
 
-	printf("Pulseaudio bus: %s\n", pulse_server_string);
+	printf("PulseAudio bus: %s\n", pulse_server_string);
 
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
@@ -69,8 +71,9 @@ GDBusConnection* get_pulseaudio_bus()
 	return answer;
 }
 
-GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
+vector<string> get_things( GDBusConnection *conn, const char *get_method_name )
 {
+	vector<string> answer;
 	GVariant *temp_tva, *temp_va, *temp_a;
 	GDBusProxy *proxy;
 	GError *error = NULL;
@@ -107,23 +110,35 @@ GVariant* get_things( GDBusConnection *conn, const char *get_method_name )
 	// extract the array out of the tuple of variant
 	temp_va = g_variant_get_child_value(temp_tva,0);
 	temp_a = g_variant_get_variant(temp_va);
+
+	// Convert the Array of c-strings into a vector<string>
+	answer.resize(g_variant_n_children(temp_a));
+	for ( size_t i = 0; i < g_variant_n_children(temp_a); i++ )
+	{
+		GVariant *g_s = g_variant_get_child_value(temp_a,i);
+		answer[i] = g_variant_get_string(g_s, NULL);
+		g_variant_unref(g_s);
+	}
+
+	// Clean up
+	g_variant_unref(temp_a);
 	g_variant_unref(temp_va);
 	g_variant_unref(temp_tva);
 
-	return temp_a;
+	return answer;
 }
 
-GVariant* get_clients( GDBusConnection *conn )
+vector<string> get_clients( GDBusConnection *conn )
 {
 	return get_things( conn, "Clients" );
 }
 
-GVariant* get_sinks( GDBusConnection *conn )
+vector<string> get_sinks( GDBusConnection *conn )
 {
 	return get_things( conn, "Sinks" );
 }
 
-GVariant* get_playback_streams( GDBusConnection *conn )
+vector<string> get_playback_streams( GDBusConnection *conn )
 {
 	return get_things( conn, "PlaybackStreams" );
 }
