@@ -73,9 +73,8 @@ GDBusConnection* get_pulseaudio_bus()
 	return answer;
 }
 
-vector<string> get_things( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path )
+GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path )
 {
-	vector<string> answer;
 	GVariant *temp_tva, *temp_va, *temp_a;
 	GDBusProxy *proxy;
 	GError *error = NULL;
@@ -113,36 +112,48 @@ vector<string> get_things( GDBusConnection *conn, const char *get_method_name, c
 	temp_va = g_variant_get_child_value(temp_tva,0);
 	temp_a = g_variant_get_variant(temp_va);
 
-	// Convert the Array of c-strings into a vector<string>
-	answer.resize(g_variant_n_children(temp_a));
-	for ( size_t i = 0; i < g_variant_n_children(temp_a); i++ )
+	// Clean up
+	g_variant_unref(temp_va);
+	g_variant_unref(temp_tva);
+
+	return temp_a;
+}
+
+// Note: this function deletes the GVariant input
+vector<string> gv_to_vs( GVariant *gv )
+{
+	vector<string> answer;
+
+	// Convert the Gvariant array-of-strings into a vector<string>
+	answer.resize(g_variant_n_children(gv));
+	for ( size_t i = 0; i < g_variant_n_children(gv); i++ )
 	{
-		GVariant *g_s = g_variant_get_child_value(temp_a,i);
+		GVariant *g_s = g_variant_get_child_value(gv,i);
 		answer[i] = g_variant_get_string(g_s, NULL);
 		g_variant_unref(g_s);
 	}
+	g_variant_unref(gv);
 
-	// Clean up
-	g_variant_unref(temp_a);
-	g_variant_unref(temp_va);
-	g_variant_unref(temp_tva);
 
 	return answer;
 }
 
 vector<string> get_clients( GDBusConnection *conn )
 {
-	return get_things( conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	GVariant * gv = get_things_gv( conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	return gv_to_vs(gv);
 }
 
 vector<string> get_sinks( GDBusConnection *conn )
 {
-	return get_things( conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	GVariant * gv = get_things_gv( conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	return gv_to_vs(gv);
 }
 
 vector<string> get_playback_streams( GDBusConnection *conn, const char * path )
 {
-	return get_things( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
+	GVariant * gv = get_things_gv( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
+	return gv_to_vs(gv);
 }
 
 int main()
