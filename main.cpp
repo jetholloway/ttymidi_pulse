@@ -134,6 +134,24 @@ vector<string> gv_to_vs( GVariant *gv )
 	}
 	g_variant_unref(gv);
 
+	return answer;
+}
+
+// Note: this function deletes the GVariant input
+vector<uint32_t> gv_to_vuint32( GVariant *gv )
+{
+	vector<uint32_t> answer;
+
+	// Convert the Gvariant array-of-strings into a vector<string>
+	answer.resize(g_variant_n_children(gv));
+	for ( size_t i = 0; i < g_variant_n_children(gv); i++ )
+	{
+		GVariant *g_s = g_variant_get_child_value(gv,i);
+		answer[i] = g_variant_get_uint32(g_s);
+		g_variant_unref(g_s);
+	}
+	g_variant_unref(gv);
+
 
 	return answer;
 }
@@ -154,6 +172,12 @@ vector<string> get_playback_streams( GDBusConnection *conn, const char * path )
 {
 	GVariant * gv = get_things_gv( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
 	return gv_to_vs(gv);
+}
+
+vector<uint32_t> get_volume( GDBusConnection *conn, const char * path )
+{
+	GVariant * gv = get_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path );
+	return gv_to_vuint32(gv);
 }
 
 int main()
