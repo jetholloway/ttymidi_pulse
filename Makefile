@@ -1,4 +1,4 @@
-CXXFLAGS =
+CXXFLAGS = --std=c++11 -g3
 file=main
 
 all: sample
