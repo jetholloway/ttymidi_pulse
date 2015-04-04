@@ -300,52 +300,42 @@ map<string,string> get_property_list( GDBusConnection* conn, const char *interfa
 
 int main()
 {
-	GDBusConnection *connection;
-	GError *error = NULL;
-	GDBusProxy *proxy;
+	vector<string> clients, mpd_stream_paths;
+	GError *error =  NULL;
 
-	connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
-	if ( print_errors(error) )
-		exit(1);
+	// Open the connection
+	GDBusConnection *pulse_conn = get_pulseaudio_bus();
 
-	// Create a proxy object for the "bus driver" (name "org.freedesktop.DBus")
-	proxy = g_dbus_proxy_new_sync( connection,
-	                               G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
-	                               NULL,                     // DBus interface
-	                               "org.freedesktop.DBus",   // Name
-	                               "/org/freedesktop/DBus",  // path
-	                               "org.freedesktop.DBus",   // interface
-	                               NULL,                     // GCancellable
-	                               &error );
-	print_errors(error);
+	// Get the clients
+	clients = get_clients(pulse_conn);
 
-	// Call ListNames method, wait for reply
-	GVariant* gvp = g_dbus_proxy_call_sync( proxy,
-	                                        "ListNames",            // method name
-	                                        g_variant_new("()"),    // parameters to method
-	                                        G_DBUS_CALL_FLAGS_NONE, // flags
-	                                        -1,                     // timeout
-	                                        NULL,                   // cancellable
-	                                        &error );
-	if ( print_errors(error) )
-		exit(1);
-
-	// Print the results
-	GVariant * array_of_strings = g_variant_get_child_value(gvp, 0);
-
-	g_print("Names on the message bus:\n");
-
-	for (size_t count = 0; count < g_variant_n_children(array_of_strings); ++count)
+	// Go through each client
+	for ( const string & c : clients )
 	{
-		GVariant *child = g_variant_get_child_value(array_of_strings, count);
-		g_print("  %s\n", g_variant_get_string(child, NULL));
-		g_variant_unref(child);
+		map<string,string> properties = get_property_list(pulse_conn, "org.PulseAudio.Core1.Client", c.c_str() );
+
+		if ( properties["application.name"] == (string)"Music Player Daemon" )
+			for ( const string & path : get_playback_streams( pulse_conn, c.c_str() ) )
+				mpd_stream_paths.push_back(path);
 	}
 
-	g_variant_unref(array_of_strings);
-	g_variant_unref(gvp);
-	g_object_unref(proxy);
-	g_dbus_connection_close_sync(connection, NULL, &error );
+	// Go through each stream and set the volume
+	for ( const string & stream_path : mpd_stream_paths )
+	{
+		// Note that the maximum volume is supposedly 65535
+		vector<uint32_t> old_vols, new_vols;
+
+		old_vols = get_volume(pulse_conn, stream_path.c_str() );
+
+		new_vols = old_vols;
+		for ( uint32_t & v : new_vols )
+			v = 32768;
+
+		set_volume( pulse_conn, stream_path.c_str(), new_vols );
+	}
+
+	// Clean up
+	g_dbus_connection_close_sync(pulse_conn, NULL, &error );
 	print_errors(error);
 
 	return 0;
