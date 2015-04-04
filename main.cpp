@@ -247,6 +247,57 @@ void set_volume( GDBusConnection *conn, const char * path, const vector<uint32_t
 	// Apparently you don't have to free 'gv', as it is already freed or some shit
 }
 
+map<string,string> get_property_list( GDBusConnection* conn, const char *interface, const char *path )
+{
+	GVariant *gv_adsab;
+	map<string,string> answer;
+
+	// Make the DBus call to get the data
+	gv_adsab = get_things_gv(conn, "PropertyList", interface, path);
+
+	for ( size_t j = 0; j < g_variant_n_children(gv_adsab); j++ )
+	{
+		GVariant *property, *key_gv, *data_gv;
+
+		property = g_variant_get_child_value(gv_adsab,j);
+
+		// Unpack the shitty dictionary entry
+		string key, data;
+
+		if ( g_variant_n_children(property) != 2 )
+		{
+			cerr << "Property is a dictionary entry which does not have 2 children" << endl;
+			exit(1);
+		}
+
+		key_gv  = g_variant_get_child_value(property,0);
+		data_gv = g_variant_get_child_value(property,1);
+
+		// data_gv is an array of bytes, not a fucking string, so decode that
+		// But do not include the trailing '\0'
+		for ( size_t j = 0; j < g_variant_n_children(data_gv) - 1; j++ )
+		{
+			GVariant *byte_gv = g_variant_get_child_value(data_gv, j);
+			data.append(1, g_variant_get_byte(byte_gv));
+			g_variant_unref(byte_gv);
+		}
+
+		key  = g_variant_get_string(key_gv, NULL);
+
+		answer[key] = data;
+
+		// Clean up
+		g_variant_unref(key_gv);
+		g_variant_unref(data_gv);
+		g_variant_unref(property);
+	}
+
+	// Clean up
+	g_variant_unref(gv_adsab);
+
+	return answer;
+}
+
 int main()
 {
 	GDBusConnection *connection;
