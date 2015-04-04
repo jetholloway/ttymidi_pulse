@@ -1,9 +1,12 @@
 #include <cstdlib>          // for exit()
 #include <cstdio>
+#include <iostream>
 #include <cstring>
 #include <string>
 #include <vector>
+#include <map>
 #include <gio/gio.h>		// for g_dbus_*
+#include <assert.h>
 
 using namespace std;
 
@@ -45,7 +48,6 @@ GDBusConnection* get_pulseaudio_bus()
 		print_errors(error);
 
 		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
-
 		pulse_server_string = g_variant_get_string(gvp, NULL);
 
 		g_dbus_connection_close_sync(connection, NULL, &error );
@@ -71,7 +73,7 @@ GDBusConnection* get_pulseaudio_bus()
 	return answer;
 }
 
-vector<string> get_things( GDBusConnection *conn, const char *get_method_name )
+vector<string> get_things( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path )
 {
 	vector<string> answer;
 	GVariant *temp_tva, *temp_va, *temp_a;
@@ -86,7 +88,7 @@ vector<string> get_things( GDBusConnection *conn, const char *get_method_name )
 	        G_DBUS_PROXY_FLAGS_NONE,
 	        NULL,                              // Interface info struct (opt.)
 	        NULL,                              // Bus Name
-	        "/org/pulseaudio/core1",           // Path of object
+	        path,           // Path of object
 	        "org.freedesktop.DBus.Properties", // Interface
 	        NULL,                              // GCancellable
 	        &error );
@@ -99,7 +101,7 @@ vector<string> get_things( GDBusConnection *conn, const char *get_method_name )
 	temp_tva = g_dbus_proxy_call_sync(
 	          proxy,
 	          "Get",                  // Method name
-	          g_variant_new("(ss)","org.PulseAudio.Core1",get_method_name), // Params
+	          g_variant_new("(ss)",interface,get_method_name), // Params
 	          G_DBUS_CALL_FLAGS_NONE,
 	          -1,                     // Timeout
 	          NULL,                   // Cancellable
@@ -130,17 +132,17 @@ vector<string> get_things( GDBusConnection *conn, const char *get_method_name )
 
 vector<string> get_clients( GDBusConnection *conn )
 {
-	return get_things( conn, "Clients" );
+	return get_things( conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 }
 
 vector<string> get_sinks( GDBusConnection *conn )
 {
-	return get_things( conn, "Sinks" );
+	return get_things( conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 }
 
-vector<string> get_playback_streams( GDBusConnection *conn )
+vector<string> get_playback_streams( GDBusConnection *conn, const char * path )
 {
-	return get_things( conn, "PlaybackStreams" );
+	return get_things( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
 }
 
 int main()
