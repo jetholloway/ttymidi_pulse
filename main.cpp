@@ -191,6 +191,27 @@ vector<uint32_t> gv_to_vuint32( GVariant *gv )
 	}
 	g_variant_unref(gv);
 
+	return answer;
+}
+
+// Note: this function creates a GVariant, that must be freed later
+GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 )
+{
+	GVariantBuilder *builder;
+	GVariant *answer;
+
+	// Create a 'builder' object
+	builder = g_variant_builder_new(G_VARIANT_TYPE("au"));
+
+	// Add all of the values to the builder
+	for ( uint32_t u : vuint32 )
+		g_variant_builder_add (builder, "u", u);
+
+	// Convert the builder into an actual GVariant
+	answer = g_variant_new ("au", builder);
+
+	// Clean up
+	g_variant_builder_unref (builder);
 
 	return answer;
 }
@@ -217,6 +238,13 @@ vector<uint32_t> get_volume( GDBusConnection *conn, const char * path )
 {
 	GVariant * gv = get_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path );
 	return gv_to_vuint32(gv);
+}
+
+void set_volume( GDBusConnection *conn, const char * path, const vector<uint32_t> & vols )
+{
+	GVariant * gv = vuint32_to_gv(vols);
+	set_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path, gv );
+	// Apparently you don't have to free 'gv', as it is already freed or some shit
 }
 
 int main()
