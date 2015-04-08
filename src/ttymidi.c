@@ -67,6 +67,15 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
+void exit_cli(int sig);
+static error_t parse_opt (int key, char *arg, struct argp_state *state);
+void arg_set_defaults(arguments_t *arguments);
+int open_seq(snd_seq_t** seq);
+void parse_midi_command(snd_seq_t* seq, int port_out_id, char *buf);
+void write_midi_action_to_serial_port(snd_seq_t* seq_handle);
+void* read_midi_from_alsa(void* seq);
+void* read_midi_from_serial_port(void* seq);
+
 void exit_cli(__attribute__((unused)) int sig)
 {
 	run = FALSE;
