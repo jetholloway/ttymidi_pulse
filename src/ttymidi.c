@@ -401,7 +401,7 @@ void* read_midi_from_alsa(void* seq)
 void* read_midi_from_serial_port(void* seq) 
 {
 	char buf[3], msg[MAX_MSG_SIZE];
-	int i, msglen;
+	int msglen;
 	
 	/* Lets first fast forward to first status byte... */
 	if (!arguments.printonly) {
@@ -489,8 +489,6 @@ int main(int argc, char** argv)
 {
 	//arguments arguments;
 	struct termios oldtio, newtio;
-	struct serial_struct ser_info;
-	char* modem_device = "/dev/ttyS0";
 	snd_seq_t *seq;
 
 	arg_set_defaults(&arguments);
@@ -561,6 +559,7 @@ int main(int argc, char** argv)
 	tcsetattr(serial, TCSANOW, &newtio);
 
 	// Linux-specific: enable low latency mode (FTDI "nagling off")
+//	struct serial_struct ser_info;
 //	ioctl(serial, TIOCGSERIAL, &ser_info);
 //	ser_info.flags |= ASYNC_LOW_LATENCY;
 //	ioctl(serial, TIOCSSERIAL, &ser_info);
