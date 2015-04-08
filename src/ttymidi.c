@@ -43,7 +43,7 @@
 
 int run;
 int serial;
-int port_out_id;
+int port_out_id_global;
 
 /* --------------------------------------------------------------------- */
 // Program options
@@ -161,7 +161,7 @@ arguments_t arguments;
 
 int open_seq(snd_seq_t** seq) 
 {
-	int port_out_id, port_in_id; // actually port_in_id is not needed nor used anywhere
+	int port_out_id_answer, port_in_id; // actually port_in_id is not needed nor used anywhere
 
 	if (snd_seq_open(seq, "default", SND_SEQ_OPEN_DUPLEX, 0) < 0) 
 	{
@@ -171,7 +171,7 @@ int open_seq(snd_seq_t** seq)
 
 	snd_seq_set_client_name(*seq, arguments.name);
 
-	if ((port_out_id = snd_seq_create_simple_port(*seq, "MIDI out",
+	if ((port_out_id_answer = snd_seq_create_simple_port(*seq, "MIDI out",
 					SND_SEQ_PORT_CAP_READ|SND_SEQ_PORT_CAP_SUBS_READ,
 					SND_SEQ_PORT_TYPE_APPLICATION)) < 0) 
 	{
@@ -185,7 +185,7 @@ int open_seq(snd_seq_t** seq)
 		fprintf(stderr, "Error creating sequencer port.\n");
 	}
 
-	return port_out_id;
+	return port_out_id_answer;
 }
 
 void parse_midi_command(snd_seq_t* seq, int port_out_id, char *buf)
@@ -485,7 +485,7 @@ void* read_midi_from_serial_port(void* seq)
 		}
 
 		/* parse MIDI message */
-		else parse_midi_command(seq, port_out_id, buf);
+		else parse_midi_command(seq, port_out_id_global, buf);
 	}
 
     return NULL;
@@ -507,7 +507,7 @@ int main(int argc, char** argv)
 	 * Open MIDI output port
 	 */
 
-	port_out_id = open_seq(&seq);
+	port_out_id_global = open_seq(&seq);
 
 	/* 
 	 *  Open modem device for reading and not as controlling tty because we don't
