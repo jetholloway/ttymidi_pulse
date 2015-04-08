@@ -374,6 +374,8 @@ void write_midi_action_to_serial_port(snd_seq_t* seq_handle)
       case SND_SEQ_EVENT_CHANPRESS:
         write(serial, bytes, 2);
         break;
+      default:
+        break;
     }
 
 		snd_seq_free_event(ev);
