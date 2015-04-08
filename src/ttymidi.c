@@ -394,6 +394,8 @@ void* read_midi_from_alsa(void* seq)
 	}	
 
 	printf("\nStopping [PC]->[Hardware] communication...");
+
+    return NULL;
 }
 
 void* read_midi_from_serial_port(void* seq) 
@@ -476,12 +478,14 @@ void* read_midi_from_serial_port(void* seq)
 		/* parse MIDI message */
 		else parse_midi_command(seq, port_out_id, buf);
 	}
+
+    return NULL;
 }
 
 /* --------------------------------------------------------------------- */
 // Main program
 
-main(int argc, char** argv)
+int main(int argc, char** argv)
 {
 	//arguments arguments;
 	struct termios oldtio, newtio;
@@ -593,5 +597,7 @@ main(int argc, char** argv)
 	/* restore the old port settings */
 	tcsetattr(serial, TCSANOW, &oldtio);
 	printf("\ndone!\n");
+
+    return 0;
 }
 
