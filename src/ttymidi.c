@@ -575,13 +575,12 @@ int main(int argc, char** argv)
 
 	/* Starting thread that is polling alsa midi in port */
 	pthread_t midi_out_thread, midi_in_thread;
-	int iret1, iret2;
 	run = TRUE;
-	iret1 = pthread_create(&midi_out_thread, NULL, read_midi_from_alsa, (void*) seq);
+	pthread_create(&midi_out_thread, NULL, read_midi_from_alsa, (void*) seq);
 	/* And also thread for polling serial data. As serial is currently read in
            blocking mode, by this we can enable ctrl+c quiting and avoid zombie
            alsa ports when killing app with ctrl+z */
-	iret2 = pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) seq);
+	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) seq);
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
