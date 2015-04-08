@@ -63,7 +63,7 @@ typedef struct _arguments
 {
 	int  silent, verbose, printonly;
 	char serialdevice[MAX_DEV_STR_LEN];
-	int  baudrate;
+	unsigned int  baudrate;
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
