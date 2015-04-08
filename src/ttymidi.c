@@ -71,7 +71,7 @@ void exit_cli(int sig);
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments);
 int open_seq(snd_seq_t** seq);
-void parse_midi_command(snd_seq_t* seq, int port_out_id, char *buf);
+void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf);
 void write_midi_action_to_serial_port(snd_seq_t* seq_handle);
 void* read_midi_from_alsa(void* seq);
 void* read_midi_from_serial_port(void* seq);
@@ -188,7 +188,7 @@ int open_seq(snd_seq_t** seq)
 	return port_out_id_answer;
 }
 
-void parse_midi_command(snd_seq_t* seq, int port_out_id, char *buf)
+void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf)
 {
 	/*
 	   MIDI COMMANDS
@@ -411,7 +411,8 @@ void* read_midi_from_alsa(void* seq)
 
 void* read_midi_from_serial_port(void* seq) 
 {
-	char buf[3], msg[MAX_MSG_SIZE];
+	unsigned char buf[3];
+	char msg[MAX_MSG_SIZE];
 	int msglen;
 	
 	/* Lets first fast forward to first status byte... */
@@ -467,7 +468,7 @@ void* read_midi_from_serial_port(void* seq)
 		}
 
 		/* print comment message (the ones that start with 0xFF 0x00 0x00 */
-		if (buf[0] == (char) 0xFF && buf[1] == (char) 0x00 && buf[2] == (char) 0x00)
+		if (buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00)
 		{
 			read(serial, buf, 1);
 			msglen = buf[0];
