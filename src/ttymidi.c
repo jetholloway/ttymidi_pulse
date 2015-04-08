@@ -188,7 +188,7 @@ int open_seq(snd_seq_t** seq)
 	return port_out_id_answer;
 }
 
-void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf)
+void parse_midi_command(snd_seq_t* seq, int port_out_id_in, unsigned char *buf)
 {
 	/*
 	   MIDI COMMANDS
@@ -220,7 +220,7 @@ void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf)
 	snd_seq_event_t ev;
 	snd_seq_ev_clear(&ev);
 	snd_seq_ev_set_direct(&ev);
-	snd_seq_ev_set_source(&ev, port_out_id);
+	snd_seq_ev_set_source(&ev, (unsigned char)port_out_id_in);
 	snd_seq_ev_set_subs(&ev);
 
 	int operation, channel, param1, param2;
@@ -290,7 +290,7 @@ void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf)
 void write_midi_action_to_serial_port(snd_seq_t* seq_handle) 
 {
 	snd_seq_event_t* ev;
-	char bytes[] = {0x00, 0x00, 0xFF}; 
+	unsigned char bytes[] = {0x00, 0x00, 0xFF};
 
 	do 
 	{
@@ -413,7 +413,7 @@ void* read_midi_from_serial_port(void* seq)
 {
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
-	int msglen;
+	size_t msglen;
 	
 	/* Lets first fast forward to first status byte... */
 	if (!arguments.printonly) {
