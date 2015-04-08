@@ -50,12 +50,12 @@ int port_out_id;
 
 static struct argp_option options[] = 
 {
-	{"serialdevice" , 's', "DEV" , 0, "Serial device to use. Default = /dev/ttyUSB0" },
-	{"baudrate"     , 'b', "BAUD", 0, "Serial port baud rate. Default = 115200" },
-	{"verbose"      , 'v', 0     , 0, "For debugging: Produce verbose output" },
-	{"printonly"    , 'p', 0     , 0, "Super debugging: Print values read from serial -- and do nothing else" },
-	{"quiet"        , 'q', 0     , 0, "Don't produce any output, even when the print command is sent" },
-	{"name"		, 'n', "NAME", 0, "Name of the Alsa MIDI client. Default = ttymidi" },
+	{"serialdevice" , 's', "DEV" , 0, "Serial device to use. Default = /dev/ttyUSB0", 0 },
+	{"baudrate"     , 'b', "BAUD", 0, "Serial port baud rate. Default = 115200", 0 },
+	{"verbose"      , 'v', 0     , 0, "For debugging: Produce verbose output", 0 },
+	{"printonly"    , 'p', 0     , 0, "Super debugging: Print values read from serial -- and do nothing else", 0 },
+	{"quiet"        , 'q', 0     , 0, "Don't produce any output, even when the print command is sent", 0 },
+	{"name"         , 'n', "NAME", 0, "Name of the Alsa MIDI client. Default = ttymidi", 0 },
 	{ 0 }
 };
 
@@ -151,7 +151,7 @@ void arg_set_defaults(arguments_t *arguments)
 const char *argp_program_version     = "ttymidi 0.60";
 const char *argp_program_bug_address = "tvst@hotmail.com";
 static char doc[]       = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
-static struct argp argp = { options, parse_opt, 0, doc };
+static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
 arguments_t arguments;
 
 
