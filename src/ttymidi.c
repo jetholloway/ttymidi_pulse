@@ -67,7 +67,7 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
-void exit_cli(int sig)
+void exit_cli(__attribute__((unused)) int sig)
 {
 	run = FALSE;
 	printf("\rttymidi closing down ... ");
