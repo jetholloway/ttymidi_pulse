@@ -87,7 +87,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 	/* Get the input argument from argp_parse, which we
 	   know is a pointer to our arguments structure. */
 	arguments_t *arguments = state->input;
-	int baud_temp;
+	long unsigned int baud_temp;
 
 	switch (key)
 	{
@@ -110,7 +110,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 			break;
 		case 'b':
 			if (arg == NULL) break;
-			baud_temp = strtol(arg, NULL, 0);
+			baud_temp = strtoul(arg, NULL, 0);
 			if (baud_temp != EINVAL && baud_temp != ERANGE)
 				switch (baud_temp)
 				{
@@ -122,7 +122,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 					case 38400  : arguments->baudrate = B38400 ; break;
 					case 57600  : arguments->baudrate = B57600 ; break;
 					case 115200 : arguments->baudrate = B115200; break;
-					default: printf("Baud rate %i is not supported.\n",baud_temp); exit(1);
+					default: printf("Baud rate %lui is not supported.\n",baud_temp); exit(1);
 				}
 
 		case ARGP_KEY_ARG:
