@@ -15,7 +15,7 @@
 	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ttymidi.h"
+#include "ttymidi.hh"
 
 #include <stdlib.h>
 #include <string.h>
@@ -42,7 +42,7 @@ static struct argp_option options[] =
 	{"printonly"    , 'p', 0     , 0, "Super debugging: Print values read from serial -- and do nothing else", 0 },
 	{"quiet"        , 'q', 0     , 0, "Don't produce any output, even when the print command is sent", 0 },
 	{"name"         , 'n', "NAME", 0, "Name of the Alsa MIDI client. Default = ttymidi", 0 },
-	{ 0 }
+	{ 0             , 0  , 0     , 0, 0,                                                 0 }
 };
 
 void exit_cli(__attribute__((unused)) int sig)
@@ -55,7 +55,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state)
 {
 	//   Get the input argument from argp_parse, which we know is a pointer to
 	// our arguments structure.
-	arguments_t *arguments = state->input;
+	arguments_t *arguments = (arguments_t*)state->input;
 	long unsigned int baud_temp;
 
 	switch (key)

@@ -15,7 +15,7 @@
 	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ttymidi.h"
+#include "ttymidi.hh"
 
 #include <termios.h>
 #include <stdio.h>
