@@ -68,6 +68,7 @@ typedef struct _DataForThread
 void exit_cli(int sig);
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
+arguments_t parse_all_the_arguments(int argc, char** argv);
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 void* read_midi_from_serial_port( void* data_for_thread );
 int open_serial_device( const char * filename, unsigned int baudrate );
@@ -144,10 +145,21 @@ void arg_set_defaults(arguments_t *arguments)
 	strncpy(arguments->name, name_tmp, MAX_DEV_STR_LEN);
 }
 
+// These are actual global variables which argp wants
 const char *argp_program_version     = "ttymidi 0.60";
 const char *argp_program_bug_address = "tvst@hotmail.com";
-static char doc[]       = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
-static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
+
+arguments_t parse_all_the_arguments(int argc, char** argv)
+{
+	arguments_t answer;
+	static char doc[]       = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
+	static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
+
+	arg_set_defaults(&answer);
+	argp_parse(&argp, argc, argv, 0, 0, &answer);
+
+	return answer;
+}
 
 
 
@@ -394,8 +406,7 @@ int main(int argc, char** argv)
 	struct termios oldtio;
 
 	// Parse the arguments
-	arg_set_defaults(&data_for_thread.args);
-	argp_parse(&argp, argc, argv, 0, 0, &data_for_thread.args);
+	data_for_thread.args = parse_all_the_arguments(argc, argv);
 
 	// Open the serial port device
 	data_for_thread.serial_fd = open_serial_device(data_for_thread.args.serialdevice, data_for_thread.args.baudrate);
