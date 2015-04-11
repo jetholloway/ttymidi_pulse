@@ -15,55 +15,16 @@
 	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "ttymidi.h"
 
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
 #include <termios.h>
-#include <argp.h>
+#include <stdio.h>
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>   // For read, sleep
-// Linux-specific
-
-#define FALSE                         0
-#define TRUE                          1
-
-#define MAX_DEV_STR_LEN               32
-#define MAX_MSG_SIZE                1024
-
-// change this definition for the correct port
-//#define _POSIX_SOURCE 1 // POSIX compliant source
 
 // This is a global variable so you know when the threads have to stop running
 int run;
-
-//------------------------------------------------------------------------------
-// Program options
-
-typedef struct _arguments
-{
-	int  silent, verbose, printonly;
-	char serialdevice[MAX_DEV_STR_LEN];
-	unsigned int  baudrate;
-	char name[MAX_DEV_STR_LEN];
-} arguments_t;
-
-typedef struct _DataForThread
-{
-	int serial_fd;
-	arguments_t args;
-} DataForThread;
-
-void exit_cli(int sig);
-void arg_set_defaults(arguments_t *arguments_local);
-arguments_t parse_all_the_arguments(int argc, char** argv);
-void parse_midi_command(unsigned char *buf, const arguments_t arguments );
-void* read_midi_from_serial_port( void* data_for_thread );
-int open_serial_device( const char * filename, unsigned int baudrate );
-
-//------------------------------------------------------------------------------
-// Main program
 
 int main(int argc, char** argv)
 {
