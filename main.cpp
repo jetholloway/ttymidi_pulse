@@ -12,7 +12,7 @@ using namespace std;
 
 bool print_errors( GError *e )
 {
-	if ( e != NULL )
+	if ( e != nullptr )
 	{
 		printf("Error: %s\n",e->message);
 		g_error_free(e);
@@ -24,37 +24,37 @@ bool print_errors( GError *e )
 
 GDBusConnection* get_pulseaudio_bus()
 {
-	GError *error = NULL;
-	const char* pulse_server_string = NULL;
+	GError *error = nullptr;
+	const char* pulse_server_string = nullptr;
 	GDBusConnection *answer;
 
 	// Try environment variable
 	pulse_server_string = getenv("PULSE_DBUS_SERVER");
 
-	if ( pulse_server_string == NULL )
+	if ( pulse_server_string == nullptr )
 	{
 		// Otherwise, try using DBus
-		GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+		GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION, nullptr, &error);
 		print_errors(error);
 
 		GDBusProxy *proxy = g_dbus_proxy_new_sync( connection,
 		                                           G_DBUS_PROXY_FLAGS_NONE,
-		                                           NULL,  // DBus interface
+		                                           nullptr,  // DBus interface
 		                                           "org.PulseAudio1",   // Name
 		                                           "/org/pulseaudio/server_lookup1",  // path
 		                                           "org.PulseAudio1.ServerLookup1",   // interface
-		                                           NULL,
+		                                           nullptr,
 		                                           &error );
 		print_errors(error);
 
 		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
-		pulse_server_string = g_variant_get_string(gvp, NULL);
+		pulse_server_string = g_variant_get_string(gvp, nullptr);
 
-		g_dbus_connection_close_sync(connection, NULL, &error );
+		g_dbus_connection_close_sync(connection, nullptr, &error );
 		print_errors(error);
 	}
 
-	if ( pulse_server_string == NULL )
+	if ( pulse_server_string == nullptr )
 	{
 		g_printerr("Unable to find PulseAudio bus name\n");
 		exit(1);
@@ -65,8 +65,8 @@ GDBusConnection* get_pulseaudio_bus()
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
 	                                                 G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
-	                                                 NULL,  // GDBusAuthObserver
-	                                                 NULL,  // GCancellable
+	                                                 nullptr,  // GDBusAuthObserver
+	                                                 nullptr,  // GCancellable
 	                                                 &error );
 	print_errors(error);
 
@@ -77,7 +77,7 @@ GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, con
 {
 	GVariant *temp_tva, *temp_va, *temp_a;
 	GDBusProxy *proxy;
-	GError *error = NULL;
+	GError *error = nullptr;
 
 	// Interface Proxy
 	//   Note: we are not connected to a bus, but a direct peer-to-peer
@@ -85,11 +85,11 @@ GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, con
 	proxy = g_dbus_proxy_new_sync(
 	        conn,
 	        G_DBUS_PROXY_FLAGS_NONE,
-	        NULL,                              // Interface info struct (opt.)
-	        NULL,                              // Bus Name
+	        nullptr,                              // Interface info struct (opt.)
+	        nullptr,                              // Bus Name
 	        path,           // Path of object
 	        "org.freedesktop.DBus.Properties", // Interface
-	        NULL,                              // GCancellable
+	        nullptr,                              // GCancellable
 	        &error );
 	print_errors(error);
 
@@ -103,7 +103,7 @@ GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, con
 	          g_variant_new("(ss)",interface,get_method_name), // Params
 	          G_DBUS_CALL_FLAGS_NONE,
 	          -1,                     // Timeout
-	          NULL,                   // Cancellable
+	          nullptr,                   // Cancellable
 	          &error );
 	print_errors(error);
 	g_object_unref(proxy);
@@ -123,7 +123,7 @@ void set_things_gv( GDBusConnection *conn, const char *get_method_name, const ch
 {
 	GVariant *temp_tva;
 	GDBusProxy *proxy;
-	GError *error = NULL;
+	GError *error = nullptr;
 
 	// Interface Proxy
 	//   Note: we are not connected to a bus, but a direct peer-to-peer
@@ -131,11 +131,11 @@ void set_things_gv( GDBusConnection *conn, const char *get_method_name, const ch
 	proxy = g_dbus_proxy_new_sync(
 	        conn,
 	        G_DBUS_PROXY_FLAGS_NONE,
-	        NULL,                              // Interface info struct (opt.)
-	        NULL,                              // Bus Name
+	        nullptr,                              // Interface info struct (opt.)
+	        nullptr,                              // Bus Name
 	        path,           // Path of object
 	        "org.freedesktop.DBus.Properties", // Interface
-	        NULL,                              // GCancellable
+	        nullptr,                              // GCancellable
 	        &error );
 	print_errors(error);
 
@@ -149,7 +149,7 @@ void set_things_gv( GDBusConnection *conn, const char *get_method_name, const ch
 	          g_variant_new("(ssv)",interface,get_method_name,input), // Params
 	          G_DBUS_CALL_FLAGS_NONE,
 	          -1,                     // Timeout
-	          NULL,                   // Cancellable
+	          nullptr,                   // Cancellable
 	          &error );
 	print_errors(error);
 	g_object_unref(proxy);
@@ -168,7 +168,7 @@ vector<string> gv_to_vs( GVariant *gv )
 	for ( size_t i = 0; i < g_variant_n_children(gv); i++ )
 	{
 		GVariant *g_s = g_variant_get_child_value(gv,i);
-		answer[i] = g_variant_get_string(g_s, NULL);
+		answer[i] = g_variant_get_string(g_s, nullptr);
 		g_variant_unref(g_s);
 	}
 	g_variant_unref(gv);
@@ -282,7 +282,7 @@ map<string,string> get_property_list( GDBusConnection* conn, const char *interfa
 			g_variant_unref(byte_gv);
 		}
 
-		key  = g_variant_get_string(key_gv, NULL);
+		key  = g_variant_get_string(key_gv, nullptr);
 
 		answer[key] = data;
 
@@ -301,7 +301,7 @@ map<string,string> get_property_list( GDBusConnection* conn, const char *interfa
 int main()
 {
 	vector<string> clients, mpd_stream_paths;
-	GError *error =  NULL;
+	GError *error =  nullptr;
 
 	// Open the connection
 	GDBusConnection *pulse_conn = get_pulseaudio_bus();
@@ -335,7 +335,7 @@ int main()
 	}
 
 	// Clean up
-	g_dbus_connection_close_sync(pulse_conn, NULL, &error );
+	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );
 	print_errors(error);
 
 	return 0;
