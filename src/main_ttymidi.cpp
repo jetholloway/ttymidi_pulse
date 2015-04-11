@@ -24,7 +24,7 @@
 #include <unistd.h>   // For read, sleep
 
 // This is a global variable so you know when the threads have to stop running
-int run;
+extern int run;
 
 int not_main(int argc, char** argv)
 {

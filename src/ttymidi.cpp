@@ -31,6 +31,8 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
+void set_mpd_volume( unsigned int vol_in );
+
 //------------------------------------------------------------------------------
 // Program options
 
@@ -210,6 +212,8 @@ void parse_midi_command(unsigned char *buf, const arguments_t arguments )
 			param1 = (param1 & 0x7F) + ((param2 & 0x7F) << 7);
 			if (!arguments.silent && arguments.verbose)
 				printf("Serial  0x%x Pitch bend         %03u %05i\n", operation, channel, param1);
+			if ( channel == 0 )
+				set_mpd_volume(4*param1);
 			break;
 
 		// Not implementing system commands (0xF0)
