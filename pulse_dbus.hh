@@ -9,26 +9,6 @@ bool print_errors( GError *e );
 
 GDBusConnection* get_pulseaudio_bus();
 
-GVariant* get_things_gv(
-	GDBusConnection *conn,
-	const char *get_method_name,
-	const char * interface,
-	const char * path );
-
-void set_things_gv(
-	GDBusConnection *conn,
-	const char *get_method_name,
-	const char * interface,
-	const char * path, GVariant* input );
-
-// Note: these functions delete the GVariant input
-std::vector<std::string> gv_to_vs( GVariant *gv );
-
-std::vector<uint32_t> gv_to_vuint32( GVariant *gv );
-
-// Note: this function creates a GVariant, that must be freed later
-GVariant *vuint32_to_gv( const std::vector<uint32_t> & vuint32 );
-
 std::vector<std::string> get_clients( GDBusConnection *conn );
 
 std::vector<std::string> get_sinks( GDBusConnection *conn );
