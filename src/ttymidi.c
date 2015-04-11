@@ -65,6 +65,7 @@ static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments);
 void parse_midi_command(unsigned char *buf);
 void* read_midi_from_serial_port(void* seq);
+int open_serial_device( const char * filename, unsigned int baudrate );
 
 void exit_cli(__attribute__((unused)) int sig)
 {
@@ -319,31 +320,24 @@ void* read_midi_from_serial_port(__attribute__((unused)) void* seq)
 }
 
 /* --------------------------------------------------------------------- */
-// Main program
+// Serial port stuff
 
-int main(int argc, char** argv)
+int open_serial_device( const char * filename, unsigned int baudrate )
 {
-	//arguments arguments;
-	struct termios oldtio, newtio;
+	int fd; // File descriptor to return
+	struct termios newtio;
 
-	arg_set_defaults(&arguments);
-	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+	// Open modem device.
+	// O_RDWR:   open for reading and writing.
+	// O_NOCTTY: not as controlling tty because we don't  want to get killed
+	//           if linenoise sends CTRL-C.
+	fd = open(filename, O_RDWR | O_NOCTTY );
 
-	/*
-	 *  Open modem device for reading and not as controlling tty because we don't
-	 *  want to get killed if linenoise sends CTRL-C.
-	 */
-
-	serial = open(arguments.serialdevice, O_RDWR | O_NOCTTY );
-
-	if (serial < 0)
+	if (fd < 0)
 	{
-		perror(arguments.serialdevice);
+		perror(filename);
 		exit(-1);
 	}
-
-	/* save current serial port settings */
-	tcgetattr(serial, &oldtio);
 
 	/* clear struct for new port settings */
 	bzero(&newtio, sizeof(newtio));
@@ -356,7 +350,7 @@ int main(int argc, char** argv)
 	 * CLOCAL   : local connection, no modem contol
 	 * CREAD    : enable receiving characters
 	 */
-	newtio.c_cflag = arguments.baudrate | CS8 | CLOCAL | CREAD; // CRTSCTS removed
+	newtio.c_cflag = baudrate | CS8 | CLOCAL | CREAD; // CRTSCTS removed
 
 	/*
 	 * IGNPAR  : ignore bytes with parity errors
@@ -384,14 +378,34 @@ int main(int argc, char** argv)
 	/*
 	 * now clean the modem line and activate the settings for the port
 	 */
-	tcflush(serial, TCIFLUSH);
-	tcsetattr(serial, TCSANOW, &newtio);
+	tcflush(fd, TCIFLUSH);
+	tcsetattr(fd, TCSANOW, &newtio);
 
 	// Linux-specific: enable low latency mode (FTDI "nagling off")
 //	struct serial_struct ser_info;
-//	ioctl(serial, TIOCGSERIAL, &ser_info);
+//	ioctl(fd, TIOCGSERIAL, &ser_info);
 //	ser_info.flags |= ASYNC_LOW_LATENCY;
-//	ioctl(serial, TIOCSSERIAL, &ser_info);
+//	ioctl(fd, TIOCSSERIAL, &ser_info);
+
+	return fd;
+}
+
+/* --------------------------------------------------------------------- */
+// Main program
+
+int main(int argc, char** argv)
+{
+	//arguments arguments;
+	struct termios oldtio;
+
+	arg_set_defaults(&arguments);
+	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+
+
+	// Open the serial port device
+	serial = open_serial_device(arguments.serialdevice, arguments.baudrate);
+	// save current serial port settings
+	tcgetattr(serial, &oldtio);
 
 	if (arguments.printonly)
 	{
