@@ -5,7 +5,7 @@ OPTIMIZATION_FLAGS := -march=corei7 -fexpensive-optimizations -Os
 CFLAGS  := $(WARNING_FLAGS) $(OPTIMIZATION_FLAGS) $(STD_FLAG)
 
 all:
-	$(CC) src/ttymidi.c -o ttymidi -lasound -pthread $(CFLAGS)
+	$(CC) src/ttymidi.c -o ttymidi -pthread $(CFLAGS)
 
 clean:
 	rm ttymidi
