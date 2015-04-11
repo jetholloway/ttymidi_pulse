@@ -44,7 +44,7 @@ all: $(BIN_DIR)/$(FINAL_BIN)
 cleanall: clean
 
 clean:
-	rm -f $(OBJ_FILES) $(BIN_DIR)/$(FINAL_BIN) $(DEP_FILES)
+	rm -f $(CPP_OBJ_FILES) $(C_OBJ_FILES) $(BIN_DIR)/$(FINAL_BIN) $(DEP_FILES)
 
 debug: CPP_FLAGS += -DDEBUG -g
 debug: CC_FLAGS += -DDEBUG -g
