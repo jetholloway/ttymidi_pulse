@@ -32,12 +32,12 @@
 #define MAX_DEV_STR_LEN               32
 #define MAX_MSG_SIZE                1024
 
-/* change this definition for the correct port */
-//#define _POSIX_SOURCE 1 /* POSIX compliant source */
+// change this definition for the correct port
+//#define _POSIX_SOURCE 1 // POSIX compliant source
 
 int run;
 
-/* --------------------------------------------------------------------- */
+//------------------------------------------------------------------------------
 // Program options
 
 static struct argp_option options[] =
@@ -79,8 +79,8 @@ void exit_cli(__attribute__((unused)) int sig)
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state)
 {
-	/* Get the input argument from argp_parse, which we
-	   know is a pointer to our arguments structure. */
+	//   Get the input argument from argp_parse, which we know is a pointer to
+	// our arguments structure.
 	arguments_t *arguments = state->input;
 	long unsigned int baud_temp;
 
@@ -151,7 +151,7 @@ arguments_t arguments;
 
 
 
-/* --------------------------------------------------------------------- */
+//------------------------------------------------------------------------------
 // MIDI stuff
 
 void parse_midi_command(unsigned char *buf)
@@ -228,14 +228,13 @@ void parse_midi_command(unsigned char *buf)
 				printf("Serial  0x%x Pitch bend         %03u %05i\n", operation, channel, param1);
 			break;
 
-		/* Not implementing system commands (0xF0) */
+		// Not implementing system commands (0xF0)
 
 		default:
 			if (!arguments.silent)
 				printf("0x%x Unknown MIDI cmd   %03u %03u %03u\n", operation, channel, param1, param2);
 			break;
 	}
-
 }
 
 void* read_midi_from_serial_port( void* data_for_thread )
@@ -245,7 +244,7 @@ void* read_midi_from_serial_port( void* data_for_thread )
 	size_t msglen;
 	const int serial = ((DataForThread *)data_for_thread)->serial_fd;
 
-	/* Lets first fast forward to first status byte... */
+	// Lets first fast forward to first status byte...
 	if (!arguments.printonly) {
 		do read(serial, buf, 1);
 		while (buf[0] >> 7 == 0);
@@ -253,11 +252,8 @@ void* read_midi_from_serial_port( void* data_for_thread )
 
 	while (run)
 	{
-		/*
-		 * super-debug mode: only print to screen whatever
-		 * comes through the serial port.
-		 */
-
+		//   super-debug mode: only print to screen whatever comes through the
+		// serial port.
 		if (arguments.printonly)
 		{
 			read(serial, buf, 1);
@@ -266,27 +262,25 @@ void* read_midi_from_serial_port( void* data_for_thread )
 			continue;
 		}
 
-		/*
-		 * so let's align to the beginning of a midi command.
-		 */
-
+		// So let's align to the beginning of a midi command.
 		int i = 1;
 
-		while (i < 3) {
+		while (i < 3)
+		{
 			read(serial, buf+i, 1);
 
 			if (buf[i] >> 7 != 0) {
-				/* Status byte received and will always be first bit!*/
+				// Status byte received and will always be first bit!
 				buf[0] = buf[i];
 				i = 1;
 			} else {
-				/* Data byte received */
+				// Data byte received
 				if (i == 2) {
-					/* It was 2nd data byte so we have a MIDI event
-					   process! */
+					// It was 2nd data byte so we have a MIDI event process!
 					i = 3;
 				} else {
-					/* Lets figure out are we done or should we read one more byte. */
+					//   Lets figure out are we done or should we read one more
+					// byte.
 					if ((buf[0] & 0xF0) == 0xC0 || (buf[0] & 0xF0) == 0xD0) {
 						i = 3;
 					} else {
@@ -294,10 +288,9 @@ void* read_midi_from_serial_port( void* data_for_thread )
 					}
 				}
 			}
-
 		}
 
-		/* print comment message (the ones that start with 0xFF 0x00 0x00 */
+		// Print comment message (the ones that start with 0xFF 0x00 0x00)
 		if (buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00)
 		{
 			read(serial, buf, 1);
@@ -308,7 +301,7 @@ void* read_midi_from_serial_port( void* data_for_thread )
 
 			if (arguments.silent) continue;
 
-			/* make sure the string ends with a null character */
+			// Make sure the string ends with a null character
 			msg[msglen] = 0;
 
 			puts("0xFF Non-MIDI message: ");
@@ -316,15 +309,14 @@ void* read_midi_from_serial_port( void* data_for_thread )
 			putchar('\n');
 			fflush(stdout);
 		}
-
-		/* parse MIDI message */
-		else parse_midi_command(buf);
+		else // Parse MIDI message
+			parse_midi_command(buf);
 	}
 
 	return NULL;
 }
 
-/* --------------------------------------------------------------------- */
+//------------------------------------------------------------------------------
 // Serial port stuff
 
 int open_serial_device( const char * filename, unsigned int baudrate )
@@ -344,7 +336,7 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 		exit(-1);
 	}
 
-	/* clear struct for new port settings */
+	// clear struct for new port settings
 	bzero(&newtio, sizeof(newtio));
 
 	/*
@@ -365,7 +357,7 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 	 */
 	newtio.c_iflag = IGNPAR;
 
-	/* Raw output */
+	// Raw output
 	newtio.c_oflag = 0;
 
 	/*
@@ -374,15 +366,11 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 	 */
 	newtio.c_lflag = 0; // non-canonical
 
-	/*
-	 * set up: we'll be reading 4 bytes at a time.
-	 */
-	newtio.c_cc[VTIME]    = 0;     /* inter-character timer unused */
-	newtio.c_cc[VMIN]     = 1;     /* blocking read until n character arrives */
+	// Set up: we'll be reading 4 bytes at a time.
+	newtio.c_cc[VTIME]    = 0;     // inter-character timer unused
+	newtio.c_cc[VMIN]     = 1;     // blocking read until n character arrives
 
-	/*
-	 * now clean the modem line and activate the settings for the port
-	 */
+	// now clean the modem line and activate the settings for the port
 	tcflush(fd, TCIFLUSH);
 	tcsetattr(fd, TCSANOW, &newtio);
 
@@ -395,18 +383,17 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 	return fd;
 }
 
-/* --------------------------------------------------------------------- */
+//------------------------------------------------------------------------------
 // Main program
 
 int main(int argc, char** argv)
 {
-	//arguments arguments;
 	DataForThread data_for_thread;
 	struct termios oldtio;
 
+	// Parse the arguments
 	arg_set_defaults(&arguments);
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
-
 
 	// Open the serial port device
 	data_for_thread.serial_fd = open_serial_device(arguments.serialdevice, arguments.baudrate);
@@ -418,16 +405,12 @@ int main(int argc, char** argv)
 		printf("Super debug mode: Only printing the signal to screen. Nothing else.\n");
 	}
 
-	/*
-	 * read commands
-	 */
-
-	/* Starting thread that is polling serial data */
+	// Start the thread that polls serial data
 	pthread_t midi_in_thread;
 	run = TRUE;
-	/* Thread for polling serial data. As serial is currently read in
-		   blocking mode, by this we can enable ctrl+c quiting and avoid zombie
-		   alsa ports when killing app with ctrl+z */
+	// Thread for polling serial data. As serial is currently read in blocking
+	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
+	//  when killing app with ctrl+z
 	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) &data_for_thread);
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
@@ -437,10 +420,9 @@ int main(int argc, char** argv)
 		sleep(100);
 	}
 
-	/* restore the old port settings */
+	// restore the old port settings
 	tcsetattr(data_for_thread.serial_fd, TCSANOW, &oldtio);
 	printf("\ndone!\n");
 
 	return 0;
 }
-
