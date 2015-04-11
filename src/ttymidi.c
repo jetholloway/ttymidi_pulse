@@ -36,7 +36,6 @@
 //#define _POSIX_SOURCE 1 /* POSIX compliant source */
 
 int run;
-int serial;
 
 /* --------------------------------------------------------------------- */
 // Program options
@@ -60,11 +59,16 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
+typedef struct _DataForThread
+{
+	int serial_fd;
+} DataForThread;
+
 void exit_cli(int sig);
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments);
 void parse_midi_command(unsigned char *buf);
-void* read_midi_from_serial_port(void* seq);
+void* read_midi_from_serial_port( void* data_for_thread );
 int open_serial_device( const char * filename, unsigned int baudrate );
 
 void exit_cli(__attribute__((unused)) int sig)
@@ -234,11 +238,12 @@ void parse_midi_command(unsigned char *buf)
 
 }
 
-void* read_midi_from_serial_port(__attribute__((unused)) void* seq)
+void* read_midi_from_serial_port( void* data_for_thread )
 {
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
+	const int serial = ((DataForThread *)data_for_thread)->serial_fd;
 
 	/* Lets first fast forward to first status byte... */
 	if (!arguments.printonly) {
@@ -396,6 +401,7 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 int main(int argc, char** argv)
 {
 	//arguments arguments;
+	DataForThread data_for_thread;
 	struct termios oldtio;
 
 	arg_set_defaults(&arguments);
@@ -403,9 +409,9 @@ int main(int argc, char** argv)
 
 
 	// Open the serial port device
-	serial = open_serial_device(arguments.serialdevice, arguments.baudrate);
+	data_for_thread.serial_fd = open_serial_device(arguments.serialdevice, arguments.baudrate);
 	// save current serial port settings
-	tcgetattr(serial, &oldtio);
+	tcgetattr(data_for_thread.serial_fd, &oldtio);
 
 	if (arguments.printonly)
 	{
@@ -422,7 +428,7 @@ int main(int argc, char** argv)
 	/* Thread for polling serial data. As serial is currently read in
 		   blocking mode, by this we can enable ctrl+c quiting and avoid zombie
 		   alsa ports when killing app with ctrl+z */
-	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) NULL);
+	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) &data_for_thread);
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
@@ -432,7 +438,7 @@ int main(int argc, char** argv)
 	}
 
 	/* restore the old port settings */
-	tcsetattr(serial, TCSANOW, &oldtio);
+	tcsetattr(data_for_thread.serial_fd, TCSANOW, &oldtio);
 	printf("\ndone!\n");
 
 	return 0;
