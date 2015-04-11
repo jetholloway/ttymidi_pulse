@@ -24,8 +24,8 @@ DEP_DIR := .build/dep
 OBJ_DIR := .build/obj
 BIN_DIR := .
 
-CPP       := g++
-CC       := gcc
+CPP     := g++
+CC      := gcc
 
 
 
@@ -67,7 +67,6 @@ $(OBJ_DIR)/%.c.o: $(DEP_DIR)/%.c.o.d
 
 # Create dependency file
 $(DEP_DIR)/%.o.d: $(SRC_DIR)/%
-	@ echo "Creating deps for $^"
 	$(CPP) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.o.d, $(OBJ_DIR)/%.o, $@)
 
 
