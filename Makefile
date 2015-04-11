@@ -66,14 +66,9 @@ $(OBJ_DIR)/%.c.o: $(DEP_DIR)/%.c.o.d
 	@ $(CC) $(CC_FLAGS) -c -o $@ $(SRC_DIR)/$*.c
 
 # Create dependency file
-$(DEP_DIR)/%.cpp.o.d: $(SRC_DIR)/%.cpp
+$(DEP_DIR)/%.o.d: $(SRC_DIR)/%
 	@ echo "Creating deps for $^"
-	$(CPP) $(CPP_STD_FLAG) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.cpp.o.d, $(OBJ_DIR)/%.cpp.o, $@)
-
-# Create dependency file
-$(DEP_DIR)/%.c.o.d: $(SRC_DIR)/%.c
-	@ echo "Creating deps for $^"
-	@ $(CPP) $(C_STD_FLAG) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.c.o.d, $(OBJ_DIR)/%.c.o, $@)
+	$(CPP) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.o.d, $(OBJ_DIR)/%.o, $@)
 
 
 
