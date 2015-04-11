@@ -35,7 +35,8 @@
 // change this definition for the correct port
 //#define _POSIX_SOURCE 1 // POSIX compliant source
 
-int run;
+// This is a global variable so you know when the threads have to stop running
+extern int run;
 
 //------------------------------------------------------------------------------
 // Program options
@@ -395,47 +396,4 @@ int open_serial_device( const char * filename, unsigned int baudrate )
 //	ioctl(fd, TIOCSSERIAL, &ser_info);
 
 	return fd;
-}
-
-//------------------------------------------------------------------------------
-// Main program
-
-int main(int argc, char** argv)
-{
-	DataForThread data_for_thread;
-	struct termios oldtio;
-
-	// Parse the arguments
-	data_for_thread.args = parse_all_the_arguments(argc, argv);
-
-	// Open the serial port device
-	data_for_thread.serial_fd = open_serial_device(data_for_thread.args.serialdevice, data_for_thread.args.baudrate);
-	// save current serial port settings
-	tcgetattr(data_for_thread.serial_fd, &oldtio);
-
-	if (data_for_thread.args.printonly)
-	{
-		printf("Super debug mode: Only printing the signal to screen. Nothing else.\n");
-	}
-
-	// Start the thread that polls serial data
-	pthread_t midi_in_thread;
-	run = TRUE;
-	// Thread for polling serial data. As serial is currently read in blocking
-	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
-	//  when killing app with ctrl+z
-	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) &data_for_thread);
-	signal(SIGINT, exit_cli);
-	signal(SIGTERM, exit_cli);
-
-	while (run)
-	{
-		sleep(100);
-	}
-
-	// restore the old port settings
-	tcsetattr(data_for_thread.serial_fd, TCSANOW, &oldtio);
-	printf("\ndone!\n");
-
-	return 0;
 }
