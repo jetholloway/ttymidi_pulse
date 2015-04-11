@@ -1,7 +1,7 @@
 # Change these:
 FINAL_BIN := main
 
-WARNING_FLAGS := -Wall -Wextra
+WARNING_FLAGS := -Wall -Wextra -Wshadow
 
 OPTIMIZATION_FLAGS := -march=corei7 -fexpensive-optimizations -Os
 

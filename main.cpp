@@ -255,11 +255,11 @@ map<string,string> get_property_list( GDBusConnection* conn, const char *interfa
 	// Make the DBus call to get the data
 	gv_adsab = get_things_gv(conn, "PropertyList", interface, path);
 
-	for ( size_t j = 0; j < g_variant_n_children(gv_adsab); j++ )
+	for ( size_t i = 0; i < g_variant_n_children(gv_adsab); i++ )
 	{
 		GVariant *property, *key_gv, *data_gv;
 
-		property = g_variant_get_child_value(gv_adsab,j);
+		property = g_variant_get_child_value(gv_adsab,i);
 
 		// Unpack the shitty dictionary entry
 		string key, data;
