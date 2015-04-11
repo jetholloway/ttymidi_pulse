@@ -1,18 +1,18 @@
 /*
-    This file is part of ttymidi.
+	This file is part of ttymidi.
 
-    ttymidi is free software: you can redistribute it and/or modify
-    it under the terms of the GNU General Public License as published by
-    the Free Software Foundation, either version 3 of the License, or
-    (at your option) any later version.
+	ttymidi is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
 
-    ttymidi is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU General Public License for more details.
+	ttymidi is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
 
-    You should have received a copy of the GNU General Public License
-    along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
+	You should have received a copy of the GNU General Public License
+	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
@@ -358,25 +358,25 @@ void write_midi_action_to_serial_port(snd_seq_t* seq_handle)
 				break;
 		}
 
-    bytes[1] = (bytes[1] & 0x7F);
+	bytes[1] = (bytes[1] & 0x7F);
 
-    switch (ev->type)
-		{
-      case SND_SEQ_EVENT_NOTEOFF:
-      case SND_SEQ_EVENT_NOTEON:
-      case SND_SEQ_EVENT_KEYPRESS:
-      case SND_SEQ_EVENT_CONTROLLER:
-      case SND_SEQ_EVENT_PITCHBEND:
-        bytes[2] = (bytes[2] & 0x7F);
-				write(serial, bytes, 3);
-        break;
-      case SND_SEQ_EVENT_PGMCHANGE:
-      case SND_SEQ_EVENT_CHANPRESS:
-        write(serial, bytes, 2);
-        break;
-      default:
-        break;
-    }
+	switch (ev->type)
+	{
+		case SND_SEQ_EVENT_NOTEOFF:
+		case SND_SEQ_EVENT_NOTEON:
+		case SND_SEQ_EVENT_KEYPRESS:
+		case SND_SEQ_EVENT_CONTROLLER:
+		case SND_SEQ_EVENT_PITCHBEND:
+			bytes[2] = (bytes[2] & 0x7F);
+			write(serial, bytes, 3);
+			break;
+		case SND_SEQ_EVENT_PGMCHANGE:
+		case SND_SEQ_EVENT_CHANPRESS:
+			write(serial, bytes, 2);
+			break;
+		default:
+			break;
+	}
 
 		snd_seq_free_event(ev);
 
@@ -406,7 +406,7 @@ void* read_midi_from_alsa(void* seq)
 
 	printf("\nStopping [PC]->[Hardware] communication...");
 
-    return NULL;
+	return NULL;
 }
 
 void* read_midi_from_serial_port(void* seq)
@@ -491,7 +491,7 @@ void* read_midi_from_serial_port(void* seq)
 		else parse_midi_command(seq, port_out_id_global, buf);
 	}
 
-    return NULL;
+	return NULL;
 }
 
 /* --------------------------------------------------------------------- */
@@ -590,8 +590,8 @@ int main(int argc, char** argv)
 	run = TRUE;
 	pthread_create(&midi_out_thread, NULL, read_midi_from_alsa, (void*) seq);
 	/* And also thread for polling serial data. As serial is currently read in
-           blocking mode, by this we can enable ctrl+c quiting and avoid zombie
-           alsa ports when killing app with ctrl+z */
+		   blocking mode, by this we can enable ctrl+c quiting and avoid zombie
+		   alsa ports when killing app with ctrl+z */
 	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) seq);
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
@@ -608,6 +608,6 @@ int main(int argc, char** argv)
 	tcsetattr(serial, TCSANOW, &oldtio);
 	printf("\ndone!\n");
 
-    return 0;
+	return 0;
 }
 
