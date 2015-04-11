@@ -35,7 +35,7 @@ CPP_FILES := $(wildcard $(SRC_DIR)/*.cpp)
 C_FILES   := $(wildcard $(SRC_DIR)/*.c)
 CPP_OBJ_FILES := $(patsubst $(SRC_DIR)/%.cpp,$(OBJ_DIR)/%.cpp.o,$(CPP_FILES))
 C_OBJ_FILES   := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.c.o,$(C_FILES))
-DEP_FILES     := $(patsubst $(OBJ_DIR)/%.o, $(DEP_DIR)/%.o.d, $(OBJ_FILES))
+DEP_FILES     := $(patsubst $(OBJ_DIR)/%.o, $(DEP_DIR)/%.o.d, $(C_OBJ_FILES) $(CPP_OBJ_FILES))
 
 .PHONY: all clean cleanall debug
 
