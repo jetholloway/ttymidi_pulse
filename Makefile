@@ -15,7 +15,7 @@ CPP_FLAGS  := $(WARNING_FLAGS) $(OPTIMIZATION_FLAGS) $(CPP_STD_FLAG) -g3 -I/usr/
 
 #-------------------------------------------------------------------------------
 # These probably don't need to be changed (but can be)
-SRC_DIR := .
+SRC_DIR := src
 DEP_DIR := .build/dep
 OBJ_DIR := .build/obj
 BIN_DIR := .
