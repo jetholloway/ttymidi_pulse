@@ -1,7 +1,7 @@
 # Change these:
 FINAL_BIN := main
 
-WARNING_FLAGS := -Wall -Wextra -Wshadow
+WARNING_FLAGS := -Wall -Wextra -Wshadow -Wcast-align -Wcast-align -Wconversion -Wextra -Wfloat-equal -Winit-self -Winline -Wmissing-declarations -Wmissing-include-dirs -Wno-long-long -Wpointer-arith -Wredundant-decls -Wredundant-decls  -Wswitch-default -Wswitch-enum -Wundef -Wuninitialized -Wunreachable-code -Wwrite-strings
 
 OPTIMIZATION_FLAGS := -march=corei7 -fexpensive-optimizations -Os
 
