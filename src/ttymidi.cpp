@@ -49,7 +49,7 @@ static struct argp_option options[] =
 
 void exit_cli(__attribute__((unused)) int sig)
 {
-	run = FALSE;
+	run = false;
 	printf("\rttymidi closing down ... ");
 }
 

@@ -18,9 +18,6 @@
 #ifndef TTYMIDI_H
 #define TTYMIDI_H
 
-#define FALSE                         0
-#define TRUE                          1
-
 #define MAX_DEV_STR_LEN               32
 #define MAX_MSG_SIZE                1024
 

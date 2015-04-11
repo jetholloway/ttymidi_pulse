@@ -20,7 +20,6 @@ void set_mpd_volume( unsigned int vol_in );
 void set_mpd_volume( unsigned int vol_in )
 {
 	vector<string> clients, mpd_stream_paths;
-	GError *error =  nullptr;
 
 	// Get the pulse clients
 	clients = get_clients(pulse_conn);
@@ -76,7 +75,7 @@ int main(int argc, char** argv)
 	//------------------------------------------------------
 	// Start the thread that polls serial data
 	pthread_t midi_in_thread;
-	run = TRUE;
+	run = true;
 	// Thread for polling serial data. As serial is currently read in blocking
 	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
 	//  when killing app with ctrl+z

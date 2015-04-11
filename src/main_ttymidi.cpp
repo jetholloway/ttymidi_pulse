@@ -46,7 +46,7 @@ int not_main(int argc, char** argv)
 
 	// Start the thread that polls serial data
 	pthread_t midi_in_thread;
-	run = TRUE;
+	run = true;
 	// Thread for polling serial data. As serial is currently read in blocking
 	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
 	//  when killing app with ctrl+z
