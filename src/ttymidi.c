@@ -62,12 +62,13 @@ typedef struct _arguments
 typedef struct _DataForThread
 {
 	int serial_fd;
+	arguments_t args;
 } DataForThread;
 
 void exit_cli(int sig);
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
-void arg_set_defaults(arguments_t *arguments);
-void parse_midi_command(unsigned char *buf);
+void arg_set_defaults(arguments_t *arguments_local);
+void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 void* read_midi_from_serial_port( void* data_for_thread );
 int open_serial_device( const char * filename, unsigned int baudrate );
 
@@ -147,14 +148,13 @@ const char *argp_program_version     = "ttymidi 0.60";
 const char *argp_program_bug_address = "tvst@hotmail.com";
 static char doc[]       = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
 static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
-arguments_t arguments;
 
 
 
 //------------------------------------------------------------------------------
 // MIDI stuff
 
-void parse_midi_command(unsigned char *buf)
+void parse_midi_command(unsigned char *buf, const arguments_t arguments )
 {
 	/*
 	   MIDI COMMANDS
@@ -243,6 +243,8 @@ void* read_midi_from_serial_port( void* data_for_thread )
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
 	const int serial = ((DataForThread *)data_for_thread)->serial_fd;
+	const arguments_t arguments = ((DataForThread *)data_for_thread)->args;
+
 
 	// Lets first fast forward to first status byte...
 	if (!arguments.printonly) {
@@ -310,7 +312,7 @@ void* read_midi_from_serial_port( void* data_for_thread )
 			fflush(stdout);
 		}
 		else // Parse MIDI message
-			parse_midi_command(buf);
+			parse_midi_command(buf, arguments);
 	}
 
 	return NULL;
@@ -392,15 +394,15 @@ int main(int argc, char** argv)
 	struct termios oldtio;
 
 	// Parse the arguments
-	arg_set_defaults(&arguments);
-	argp_parse(&argp, argc, argv, 0, 0, &arguments);
+	arg_set_defaults(&data_for_thread.args);
+	argp_parse(&argp, argc, argv, 0, 0, &data_for_thread.args);
 
 	// Open the serial port device
-	data_for_thread.serial_fd = open_serial_device(arguments.serialdevice, arguments.baudrate);
+	data_for_thread.serial_fd = open_serial_device(data_for_thread.args.serialdevice, data_for_thread.args.baudrate);
 	// save current serial port settings
 	tcgetattr(data_for_thread.serial_fd, &oldtio);
 
-	if (arguments.printonly)
+	if (data_for_thread.args.printonly)
 	{
 		printf("Super debug mode: Only printing the signal to screen. Nothing else.\n");
 	}
