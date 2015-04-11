@@ -24,9 +24,9 @@
 #include <termios.h>
 #include <stdio.h>
 #include <argp.h>
-#include <alsa/asoundlib.h>
 #include <signal.h>
 #include <pthread.h>
+#include <unistd.h>   // For read, sleep
 // Linux-specific
 #include <linux/serial.h>
 #include <linux/ioctl.h>
@@ -43,7 +43,6 @@
 
 int run;
 int serial;
-int port_out_id_global;
 
 /* --------------------------------------------------------------------- */
 // Program options
@@ -70,7 +69,7 @@ typedef struct _arguments
 void exit_cli(int sig);
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments);
-void parse_midi_command(snd_seq_t* seq, int port_out_id, unsigned char *buf);
+void parse_midi_command(unsigned char *buf);
 void* read_midi_from_serial_port(void* seq);
 
 void exit_cli(__attribute__((unused)) int sig)
@@ -156,7 +155,7 @@ arguments_t arguments;
 /* --------------------------------------------------------------------- */
 // MIDI stuff
 
-void parse_midi_command(snd_seq_t* seq, int port_out_id_in, unsigned char *buf)
+void parse_midi_command(unsigned char *buf)
 {
 	/*
 	   MIDI COMMANDS
@@ -240,7 +239,7 @@ void parse_midi_command(snd_seq_t* seq, int port_out_id_in, unsigned char *buf)
 
 }
 
-void* read_midi_from_serial_port(void* seq)
+void* read_midi_from_serial_port(__attribute__((unused)) void* seq)
 {
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
@@ -319,7 +318,7 @@ void* read_midi_from_serial_port(void* seq)
 		}
 
 		/* parse MIDI message */
-		else parse_midi_command(seq, port_out_id_global, buf);
+		else parse_midi_command(buf);
 	}
 
 	return NULL;
@@ -332,7 +331,6 @@ int main(int argc, char** argv)
 {
 	//arguments arguments;
 	struct termios oldtio, newtio;
-	snd_seq_t *seq;
 
 	arg_set_defaults(&arguments);
 	argp_parse(&argp, argc, argv, 0, 0, &arguments);
@@ -416,7 +414,7 @@ int main(int argc, char** argv)
 	/* Thread for polling serial data. As serial is currently read in
 		   blocking mode, by this we can enable ctrl+c quiting and avoid zombie
 		   alsa ports when killing app with ctrl+z */
-	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) seq);
+	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) NULL);
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
