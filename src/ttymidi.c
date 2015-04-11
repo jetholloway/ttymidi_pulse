@@ -18,19 +18,13 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <termios.h>
-#include <stdio.h>
 #include <argp.h>
 #include <signal.h>
 #include <pthread.h>
 #include <unistd.h>   // For read, sleep
 // Linux-specific
-#include <linux/serial.h>
-#include <linux/ioctl.h>
-#include <asm/ioctls.h>
 
 #define FALSE                         0
 #define TRUE                          1
