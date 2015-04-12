@@ -8,6 +8,7 @@
 
 // Seconds to wait between successive attempts to re-open the serial device
 #define SERIAL_DEVICE_REOPEN_SECONDS 1
+#define MAX_MSG_SIZE                 1024
 
 using namespace std;
 

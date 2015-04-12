@@ -19,7 +19,6 @@
 #define TTYMIDI_H
 
 #define MAX_DEV_STR_LEN               32
-#define MAX_MSG_SIZE                1024
 
 typedef struct _arguments
 {
