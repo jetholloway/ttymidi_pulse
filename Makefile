@@ -53,7 +53,7 @@ $(OBJ_DIR)/%.cpp.o: $(SRC_DIR)/%.cpp $(DEP_DIR)/%.cpp.o.d
 
 # Create dependency file
 $(DEP_DIR)/%.o.d: $(SRC_DIR)/%
-	$(CPP) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.o.d, $(OBJ_DIR)/%.o, $@)
+	$(CPP) $(CPP_STD_FLAG) $< -MM -MF $@ -MT $(patsubst $(DEP_DIR)/%.o.d, $(OBJ_DIR)/%.o, $@)
 
 
 

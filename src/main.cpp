@@ -4,10 +4,10 @@
 #include <termios.h>
 #include <cstdio>
 #include <signal.h>
-#include <pthread.h>
 #include <unistd.h>   // For read, sleep
 
 #include <iostream>
+#include <thread>
 
 using namespace std;
 
@@ -74,19 +74,30 @@ int main(int argc, char** argv)
 
 	//------------------------------------------------------
 	// Start the thread that polls serial data
-	pthread_t midi_in_thread;
 	run = true;
 	// Thread for polling serial data. As serial is currently read in blocking
 	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
 	//  when killing app with ctrl+z
-	pthread_create(&midi_in_thread, NULL, read_midi_from_serial_port, (void*) &data_for_thread);
+	thread thr(read_midi_from_serial_port, (void*)&data_for_thread );
+	thr.detach();
+
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
 	while (run)
 	{
-		sleep(100);
+		sleep(1);
+		cout << "running main loop. run = " << run << endl;
+
+		if ( thr.joinable() )
+		{
+			cout << "joining thread" << endl;
+			thr.join();
+			cout << "joined thread" << endl;
+		}
 	}
+
+	cout << "exitted loop in main()" << endl;
 
 	//------------------------------------------------------
 	// restore the old port settings
