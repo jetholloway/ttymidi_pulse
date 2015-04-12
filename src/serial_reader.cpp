@@ -217,7 +217,7 @@ void SerialReader::read_midi_from_serial_port( )
 				fflush(stdout);
 			}
 			else // Parse MIDI message
-				parse_midi_command(buf, arguments);
+				midi_command_handler->parse_midi_command(buf, arguments);
 		}
 
 		// Don't try to re-open device until 1 second

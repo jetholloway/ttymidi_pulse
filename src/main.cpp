@@ -48,16 +48,26 @@ void set_mpd_volume( unsigned int vol_in )
 	}
 }
 
+struct MIDIHandler_Program_Volume : MIDICommandHandler
+{
+	virtual void pitch_bend(int channel, int pitch)
+	{
+		if ( channel == 0 )
+			set_mpd_volume(4*(pitch+8192));
+	}
+};
+
 int main(int argc, char** argv)
 {
 	GError *error =  nullptr;
 	arguments_t arguments;
+	MIDIHandler_Program_Volume handler;
 
 	// Parse the arguments
 	arguments = parse_all_the_arguments(argc, argv);
 
 	// Open the serial port device
-	SerialReader serial_reader(arguments);
+	SerialReader serial_reader(arguments, &handler);
 
 	if (arguments.printonly)
 	{

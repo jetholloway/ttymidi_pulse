@@ -29,8 +29,20 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
+struct MIDICommandHandler
+{
+	virtual void note_on(__attribute__((unused)) int channel, __attribute__((unused)) int key, __attribute__((unused)) int velocity) {}
+	virtual void note_off(__attribute__((unused)) int channel, __attribute__((unused)) int key, __attribute__((unused)) int velocity) {}
+	virtual void aftertouch(__attribute__((unused)) int channel, __attribute__((unused)) int key, __attribute__((unused)) int pressure) {}
+	virtual void controller_change(__attribute__((unused)) __attribute__((unused)) int channel, __attribute__((unused)) int controller_nr, __attribute__((unused)) int controller_value) {}
+	virtual void program_change(__attribute__((unused)) int channel, __attribute__((unused)) int program_nr) {}
+	virtual void channel_pressure(__attribute__((unused)) int channel, __attribute__((unused)) int pressure) {}
+	virtual void pitch_bend(__attribute__((unused)) int channel, __attribute__((unused)) int pitch) {}
+
+	void parse_midi_command(unsigned char *buf, const arguments_t arguments );
+};
+
 void exit_cli(int sig);
 arguments_t parse_all_the_arguments(int argc, char** argv);
-void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
 #endif // TTYMIDI_H
