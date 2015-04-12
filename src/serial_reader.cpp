@@ -135,7 +135,11 @@ void SerialReader::read_midi_from_serial_port( )
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
 
+	cerr << "Opening device... ";
+	this->open_serial_device();
 	// Lets first fast forward to first status byte...
+	//   This must be done every time the device is opened.  So it makes sense
+	// to put it in this function.
 	if ( this->device_open and !arguments.printonly )
 	{
 		do

@@ -60,7 +60,6 @@ int main(int argc, char** argv)
 
 	// Open the serial port device
 	SerialReader serial_reader(arguments);
-	serial_reader.open_serial_device();
 
 	if (arguments.printonly)
 	{
