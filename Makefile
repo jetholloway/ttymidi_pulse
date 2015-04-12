@@ -9,7 +9,7 @@ LD_FLAGS  :=  -ldbus-1 -lglib-2.0 -lgio-2.0 -lgobject-2.0 -lgthread-2.0 -pthread
 
 CPP_STD_FLAG  := -std=c++11
 
-CPP_FLAGS  := $(WARNING_FLAGS) $(OPTIMIZATION_FLAGS) $(CPP_STD_FLAG) -g3 -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include/
+CPP_FLAGS  := $(WARNING_FLAGS) $(OPTIMIZATION_FLAGS) $(CPP_STD_FLAG) -I/usr/include/dbus-1.0 -I/usr/lib/x86_64-linux-gnu/dbus-1.0/include -I/usr/include/glib-2.0 -I/usr/lib/x86_64-linux-gnu/glib-2.0/include/
 
 
 #-------------------------------------------------------------------------------
@@ -38,7 +38,7 @@ cleanall: clean
 clean:
 	rm -f $(CPP_OBJ_FILES) $(BIN_DIR)/$(FINAL_BIN) $(DEP_FILES)
 
-debug: CPP_FLAGS += -DDEBUG -g
+debug: CPP_FLAGS += -DDEBUG -g3
 debug: $(BIN_DIR)/$(FINAL_BIN)
 
 # Compile the final binary
