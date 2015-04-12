@@ -21,7 +21,6 @@
 #define MAX_DEV_STR_LEN               32
 #define MAX_MSG_SIZE                1024
 
-
 typedef struct _arguments
 {
 	int  silent, verbose, printonly;
@@ -30,13 +29,8 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
-typedef struct _DataForThread
-{
-	int serial_fd;
-	arguments_t args;
-} DataForThread;
-
 void exit_cli(int sig);
 arguments_t parse_all_the_arguments(int argc, char** argv);
+void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
 #endif // TTYMIDI_H

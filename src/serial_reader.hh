@@ -18,13 +18,11 @@ struct SerialReader
 	void close_serial_device();
 	bool attempt_serial_read( void *buf, size_t count );
 	void read_midi_from_serial_port( );
-	int get_fd();
 
 private:
 	int serial_fd;
 	struct termios oldtio;
 	bool device_open;
 };
-
 
 #endif // SERIAL_READER_HH

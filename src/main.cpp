@@ -1,8 +1,6 @@
 #include "pulse_dbus.hh"
-#include "ttymidi.hh"
 #include "serial_reader.hh"
 
-#include <termios.h>
 #include <signal.h>
 #include <unistd.h>   // For read, sleep
 
@@ -84,7 +82,6 @@ int main(int argc, char** argv)
 	while (run)
 	{
 		sleep(1);
-		cout << "running main loop. run = " << run << endl;
 
 		if ( thr.joinable() )
 		{
@@ -92,6 +89,13 @@ int main(int argc, char** argv)
 			thr.join();
 			cout << "joined thread" << endl;
 		}
+	}
+
+	if ( thr.joinable() )
+	{
+		cout << "joining thread" << endl;
+		thr.join();
+		cout << "joined thread" << endl;
 	}
 
 	cout << "exitted loop in main()" << endl;

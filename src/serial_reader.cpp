@@ -12,8 +12,6 @@
 using namespace std;
 
 extern int run;
-void set_mpd_volume( unsigned int vol_in );
-void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
 //==============================================================================
 
@@ -25,11 +23,6 @@ void SerialReader::close_serial_device()
 	close(this->serial_fd);
 
 	device_open = false;
-}
-
-int SerialReader::get_fd()
-{
-	return serial_fd;
 }
 
 bool SerialReader::open_serial_device( )

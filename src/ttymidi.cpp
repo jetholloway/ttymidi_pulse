@@ -21,14 +21,12 @@
 #include <string.h>
 #include <termios.h>
 #include <argp.h>
-#include <unistd.h>   // For read, sleep
 
 // This is a global variable so you know when the threads have to stop running
 extern int run;
 
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
-void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
 void set_mpd_volume( unsigned int vol_in );
 
