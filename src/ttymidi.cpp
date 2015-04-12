@@ -19,7 +19,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <fcntl.h>
 #include <termios.h>
 #include <argp.h>
 #include <unistd.h>   // For read, sleep
@@ -335,71 +334,4 @@ void* read_midi_from_serial_port( void* data_for_thread )
 		printf("Exitted loop in read_midi_from_serial_port()\n");
 
 	return NULL;
-}
-
-//------------------------------------------------------------------------------
-// Serial port stuff
-
-int open_serial_device( const char * filename, unsigned int baudrate )
-{
-	int fd; // File descriptor to return
-	struct termios newtio;
-
-	// Open modem device.
-	// O_RDWR:   open for reading and writing.
-	// O_NOCTTY: not as controlling tty because we don't  want to get killed
-	//           if linenoise sends CTRL-C.
-	fd = open(filename, O_RDWR | O_NOCTTY );
-
-	if (fd < 0)
-	{
-		perror(filename);
-		exit(-1);
-	}
-
-	// clear struct for new port settings
-	bzero(&newtio, sizeof(newtio));
-
-	/*
-	 * BAUDRATE : Set bps rate. You could also use cfsetispeed and cfsetospeed.
-	 * CRTSCTS  : output hardware flow control (only used if the cable has
-	 * all necessary lines. See sect. 7 of Serial-HOWTO)
-	 * CS8      : 8n1 (8bit, no parity, 1 stopbit)
-	 * CLOCAL   : local connection, no modem contol
-	 * CREAD    : enable receiving characters
-	 */
-	newtio.c_cflag = baudrate | CS8 | CLOCAL | CREAD; // CRTSCTS removed
-
-	/*
-	 * IGNPAR  : ignore bytes with parity errors
-	 * ICRNL   : map CR to NL (otherwise a CR input on the other computer
-	 * will not terminate input)
-	 * otherwise make device raw (no other input processing)
-	 */
-	newtio.c_iflag = IGNPAR;
-
-	// Raw output
-	newtio.c_oflag = 0;
-
-	/*
-	 * ICANON  : enable canonical input
-	 * disable all echo functionality, and don't send signals to calling program
-	 */
-	newtio.c_lflag = 0; // non-canonical
-
-	// Set up: we'll be reading 4 bytes at a time.
-	newtio.c_cc[VTIME]    = 0;     // inter-character timer unused
-	newtio.c_cc[VMIN]     = 1;     // blocking read until n character arrives
-
-	// now clean the modem line and activate the settings for the port
-	tcflush(fd, TCIFLUSH);
-	tcsetattr(fd, TCSANOW, &newtio);
-
-	// Linux-specific: enable low latency mode (FTDI "nagling off")
-//	struct serial_struct ser_info;
-//	ioctl(fd, TIOCGSERIAL, &ser_info);
-//	ser_info.flags |= ASYNC_LOW_LATENCY;
-//	ioctl(fd, TIOCSSERIAL, &ser_info);
-
-	return fd;
 }
