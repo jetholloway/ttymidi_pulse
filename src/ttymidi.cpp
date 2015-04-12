@@ -30,6 +30,7 @@ extern int run;
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
+bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments );
 
 void set_mpd_volume( unsigned int vol_in );
 
@@ -225,6 +226,22 @@ void parse_midi_command(unsigned char *buf, const arguments_t arguments )
 	}
 }
 
+bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments )
+{
+	long int ret = read(fd, buf, count);
+
+	// If ret is 0, then we were unable to read any bytes from the device
+	if ( ret == 0 )
+	{
+		if (!arguments.silent && arguments.verbose)
+			printf("No bytes could be read from the device file. Quitting.\n");
+		run = false;
+		return false;
+	}
+	else	// Successful read
+		return true;
+}
+
 void* read_midi_from_serial_port( void* data_for_thread )
 {
 	unsigned char buf[3];
@@ -236,17 +253,24 @@ void* read_midi_from_serial_port( void* data_for_thread )
 
 	// Lets first fast forward to first status byte...
 	if (!arguments.printonly) {
-		do read(serial, buf, 1);
+		do
+		{
+			if ( !attempt_serial_read(serial, buf, 1, arguments) )
+				break;
+		}
 		while (buf[0] >> 7 == 0);
 	}
 
+	// Note: run can be set to 0 by the function attempt_serial_read()
 	while (run)
 	{
 		//   super-debug mode: only print to screen whatever comes through the
 		// serial port.
 		if (arguments.printonly)
 		{
-			read(serial, buf, 1);
+			if ( !attempt_serial_read(serial, buf, 1, arguments) )
+				break;
+
 			printf("%x\t", (int) buf[0]&0xFF);
 			fflush(stdout);
 			continue;
@@ -257,7 +281,8 @@ void* read_midi_from_serial_port( void* data_for_thread )
 
 		while (i < 3)
 		{
-			read(serial, buf+i, 1);
+			if ( !attempt_serial_read(serial, buf+i, 1, arguments) )
+				break;
 
 			if (buf[i] >> 7 != 0) {
 				// Status byte received and will always be first bit!
@@ -283,11 +308,14 @@ void* read_midi_from_serial_port( void* data_for_thread )
 		// Print comment message (the ones that start with 0xFF 0x00 0x00)
 		if (buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00)
 		{
-			read(serial, buf, 1);
+			if ( !attempt_serial_read(serial, buf, 1, arguments) )
+				break;
+
 			msglen = buf[0];
 			if (msglen > MAX_MSG_SIZE-1) msglen = MAX_MSG_SIZE-1;
 
-			read(serial, msg, msglen);
+			if ( !attempt_serial_read(serial, msg, msglen, arguments) )
+				break;
 
 			if (arguments.silent) continue;
 
@@ -302,6 +330,9 @@ void* read_midi_from_serial_port( void* data_for_thread )
 		else // Parse MIDI message
 			parse_midi_command(buf, arguments);
 	}
+
+	if (!arguments.silent && arguments.verbose)
+		printf("Exitted loop in read_midi_from_serial_port()\n");
 
 	return NULL;
 }
