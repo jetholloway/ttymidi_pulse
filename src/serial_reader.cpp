@@ -114,6 +114,17 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 		device_open = false;
 		return false;
 	}
+	else if ( ret == -1 )
+	{
+		if (!this->arguments.silent && this->arguments.verbose)
+		{
+			cerr << "Error reading from serial device. ";
+			perror("read()");
+		}
+		run = false;
+		device_open = false;
+		return false;
+	}
 	else	// Successful read
 		return true;
 }
