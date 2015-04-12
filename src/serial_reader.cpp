@@ -3,7 +3,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <cstdio>
 #include <unistd.h>
 #include <iostream>
 
@@ -100,7 +99,7 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 	if ( ret == 0 )
 	{
 		if (!this->arguments.silent && this->arguments.verbose)
-			printf("No bytes could be read from the device file. Quitting.\n");
+			cerr << "No bytes could be read from the device file. Quitting." << endl;
 		run = false;
 		return false;
 	}
@@ -195,5 +194,5 @@ void SerialReader::read_midi_from_serial_port( )
 	}
 
 	if (!arguments.silent && arguments.verbose)
-		printf("Exitted loop in read_midi_from_serial_port()\n");
+		cout << "Exitted loop in read_midi_from_serial_port()" << endl;
 }

@@ -30,7 +30,7 @@ bool print_errors( GError *e )
 {
 	if ( e != NULL )
 	{
-		printf("Error: %s\n",e->message);
+		cerr << "Error: " << e->message << endl;
 		g_error_free(e);
 		return 1;
 	}
@@ -72,11 +72,11 @@ GDBusConnection* get_pulseaudio_bus()
 
 	if ( pulse_server_string == NULL )
 	{
-		g_printerr("Unable to find PulseAudio bus name\n");
+		cerr << "Unable to find PulseAudio bus name" << endl;
 		exit(1);
 	}
 
-	printf("PulseAudio bus: %s\n", pulse_server_string);
+	cout << "PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address

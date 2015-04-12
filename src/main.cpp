@@ -3,7 +3,6 @@
 #include "serial_reader.hh"
 
 #include <termios.h>
-#include <cstdio>
 #include <signal.h>
 #include <unistd.h>   // For read, sleep
 
@@ -65,7 +64,7 @@ int main(int argc, char** argv)
 
 	if (arguments.printonly)
 	{
-		printf("Super debug mode: Only printing the signal to screen. Nothing else.\n");
+		cout << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
 	}
 
 	// Open the DBus connection
@@ -101,7 +100,7 @@ int main(int argc, char** argv)
 	//------------------------------------------------------
 	// restore the old port settings
 	serial_reader.close_serial_device();
-	printf("\ndone!\n");
+	cout << endl << "done!" << endl;
 
 	// Clean up DBus things
 	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );
