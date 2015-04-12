@@ -1,5 +1,6 @@
 #include "pulse_dbus.hh"
 #include "ttymidi.hh"
+#include "serial_reader.hh"
 
 #include <termios.h>
 #include <cstdio>
@@ -53,18 +54,20 @@ void set_mpd_volume( unsigned int vol_in )
 int main(int argc, char** argv)
 {
 	GError *error =  nullptr;
-	DataForThread data_for_thread;
+	arguments_t arguments;
 	struct termios oldtio;
 
 	// Parse the arguments
-	data_for_thread.args = parse_all_the_arguments(argc, argv);
+	arguments = parse_all_the_arguments(argc, argv);
 
 	// Open the serial port device
-	data_for_thread.serial_fd = open_serial_device(data_for_thread.args.serialdevice, data_for_thread.args.baudrate);
-	// save current serial port settings
-	tcgetattr(data_for_thread.serial_fd, &oldtio);
+	SerialReader serial_reader(arguments);
+	serial_reader.open_serial_device();
 
-	if (data_for_thread.args.printonly)
+	// save current serial port settings
+	tcgetattr(serial_reader.get_fd(), &oldtio);
+
+	if (arguments.printonly)
 	{
 		printf("Super debug mode: Only printing the signal to screen. Nothing else.\n");
 	}
@@ -78,7 +81,7 @@ int main(int argc, char** argv)
 	// Thread for polling serial data. As serial is currently read in blocking
 	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
 	//  when killing app with ctrl+z
-	thread thr(read_midi_from_serial_port, (void*)&data_for_thread );
+	thread thr(&SerialReader::read_midi_from_serial_port, serial_reader);
 	thr.detach();
 
 	signal(SIGINT, exit_cli);
@@ -101,7 +104,7 @@ int main(int argc, char** argv)
 
 	//------------------------------------------------------
 	// restore the old port settings
-	tcsetattr(data_for_thread.serial_fd, TCSANOW, &oldtio);
+	tcsetattr(serial_reader.get_fd(), TCSANOW, &oldtio);
 	printf("\ndone!\n");
 
 
