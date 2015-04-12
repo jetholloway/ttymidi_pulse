@@ -38,6 +38,5 @@ typedef struct _DataForThread
 
 void exit_cli(int sig);
 arguments_t parse_all_the_arguments(int argc, char** argv);
-void* read_midi_from_serial_port( void* data_for_thread );
 
 #endif // TTYMIDI_H

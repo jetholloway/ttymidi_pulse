@@ -10,6 +10,8 @@ using namespace std;
 
 extern int run;
 void set_mpd_volume( unsigned int vol_in );
+void parse_midi_command(unsigned char *buf, const arguments_t arguments );
+bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments );
 
 //==============================================================================
 
@@ -81,9 +83,90 @@ void SerialReader::open_serial_device( )
 
 void SerialReader::read_midi_from_serial_port( )
 {
-	DataForThread dft;
-	dft.serial_fd = serial_fd;
-	dft.args = arguments;
+	unsigned char buf[3];
+	char msg[MAX_MSG_SIZE];
+	size_t msglen;
 
-	::read_midi_from_serial_port((void*)&dft);
+	// Lets first fast forward to first status byte...
+	if (!arguments.printonly) {
+		do
+		{
+			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+				break;
+		}
+		while (buf[0] >> 7 == 0);
+	}
+
+	// Note: run can be set to 0 by the function attempt_serial_read()
+	while (run)
+	{
+		//   super-debug mode: only print to screen whatever comes through the
+		// serial port.
+		if (arguments.printonly)
+		{
+			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+				break;
+
+			printf("%x\t", (int) buf[0]&0xFF);
+			fflush(stdout);
+			continue;
+		}
+
+		// So let's align to the beginning of a midi command.
+		int i = 1;
+
+		while (i < 3)
+		{
+			if ( !attempt_serial_read(serial_fd, buf+i, 1, arguments) )
+				break;
+
+			if (buf[i] >> 7 != 0) {
+				// Status byte received and will always be first bit!
+				buf[0] = buf[i];
+				i = 1;
+			} else {
+				// Data byte received
+				if (i == 2) {
+					// It was 2nd data byte so we have a MIDI event process!
+					i = 3;
+				} else {
+					//   Lets figure out are we done or should we read one more
+					// byte.
+					if ((buf[0] & 0xF0) == 0xC0 || (buf[0] & 0xF0) == 0xD0) {
+						i = 3;
+					} else {
+						i = 2;
+					}
+				}
+			}
+		}
+
+		// Print comment message (the ones that start with 0xFF 0x00 0x00)
+		if (buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00)
+		{
+			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+				break;
+
+			msglen = buf[0];
+			if (msglen > MAX_MSG_SIZE-1) msglen = MAX_MSG_SIZE-1;
+
+			if ( !attempt_serial_read(serial_fd, msg, msglen, arguments) )
+				break;
+
+			if (arguments.silent) continue;
+
+			// Make sure the string ends with a null character
+			msg[msglen] = 0;
+
+			puts("0xFF Non-MIDI message: ");
+			puts(msg);
+			putchar('\n');
+			fflush(stdout);
+		}
+		else // Parse MIDI message
+			parse_midi_command(buf, arguments);
+	}
+
+	if (!arguments.silent && arguments.verbose)
+		printf("Exitted loop in read_midi_from_serial_port()\n");
 }
