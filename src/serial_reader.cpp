@@ -20,6 +20,8 @@ void SerialReader::close_serial_device()
 	tcsetattr(this->serial_fd, TCSANOW, &this->oldtio);
 
 	close(this->serial_fd);
+
+	device_open = false;
 }
 
 int SerialReader::get_fd()
@@ -30,6 +32,12 @@ int SerialReader::get_fd()
 void SerialReader::open_serial_device( )
 {
 	struct termios newtio;
+
+	if ( device_open )
+	{
+		cerr << "open_serial_device(): device_open = true (i.e. device already open)" << endl;
+		exit(1);
+	}
 
 	// Open modem device.
 	// O_RDWR:   open for reading and writing.
@@ -89,6 +97,8 @@ void SerialReader::open_serial_device( )
 //	ioctl(serial_fd, TIOCGSERIAL, &ser_info);
 //	ser_info.flags |= ASYNC_LOW_LATENCY;
 //	ioctl(serial_fd, TIOCSSERIAL, &ser_info);
+
+	device_open = true;
 }
 
 bool SerialReader::attempt_serial_read( void *buf, size_t count )
@@ -101,6 +111,7 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 		if (!this->arguments.silent && this->arguments.verbose)
 			cerr << "No bytes could be read from the device file. Quitting." << endl;
 		run = false;
+		device_open = false;
 		return false;
 	}
 	else	// Successful read
@@ -114,7 +125,8 @@ void SerialReader::read_midi_from_serial_port( )
 	size_t msglen;
 
 	// Lets first fast forward to first status byte...
-	if (!arguments.printonly) {
+	if ( this->device_open and !arguments.printonly )
+	{
 		do
 		{
 			if ( !attempt_serial_read(buf, 1) )
@@ -124,7 +136,7 @@ void SerialReader::read_midi_from_serial_port( )
 	}
 
 	// Note: run can be set to 0 by the function attempt_serial_read()
-	while (run)
+	while (run && this->device_open)
 	{
 		//   super-debug mode: only print to screen whatever comes through the
 		// serial port.

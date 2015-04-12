@@ -11,7 +11,7 @@ struct SerialReader
 	const arguments_t arguments;
 
 	SerialReader( arguments_t args_in ) :
-	arguments(args_in), serial_fd(-1)
+	arguments(args_in), serial_fd(-1), device_open(false)
 	{ }
 
 	void open_serial_device( );
@@ -23,6 +23,7 @@ struct SerialReader
 private:
 	int serial_fd;
 	struct termios oldtio;
+	bool device_open;
 };
 
 
