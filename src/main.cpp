@@ -55,7 +55,6 @@ int main(int argc, char** argv)
 {
 	GError *error =  nullptr;
 	arguments_t arguments;
-	struct termios oldtio;
 
 	// Parse the arguments
 	arguments = parse_all_the_arguments(argc, argv);
@@ -63,9 +62,6 @@ int main(int argc, char** argv)
 	// Open the serial port device
 	SerialReader serial_reader(arguments);
 	serial_reader.open_serial_device();
-
-	// save current serial port settings
-	tcgetattr(serial_reader.get_fd(), &oldtio);
 
 	if (arguments.printonly)
 	{
@@ -104,9 +100,8 @@ int main(int argc, char** argv)
 
 	//------------------------------------------------------
 	// restore the old port settings
-	tcsetattr(serial_reader.get_fd(), TCSANOW, &oldtio);
+	serial_reader.close_serial_device();
 	printf("\ndone!\n");
-
 
 	// Clean up DBus things
 	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );

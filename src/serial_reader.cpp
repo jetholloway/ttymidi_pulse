@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <fcntl.h>
-#include <termios.h>
 #include <cstdio>
 #include <unistd.h>
+#include <iostream>
 
 using namespace std;
 
@@ -14,6 +14,14 @@ void set_mpd_volume( unsigned int vol_in );
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
 
 //==============================================================================
+
+void SerialReader::close_serial_device()
+{
+	cout << "Restoring old terminal attributes, and closing device" << endl;
+	tcsetattr(this->serial_fd, TCSANOW, &this->oldtio);
+
+	close(this->serial_fd);
+}
 
 int SerialReader::get_fd()
 {
@@ -29,6 +37,9 @@ void SerialReader::open_serial_device( )
 	// O_NOCTTY: not as controlling tty because we don't  want to get killed
 	//           if linenoise sends CTRL-C.
 	serial_fd = open(arguments.serialdevice, O_RDWR | O_NOCTTY );
+
+	// save current serial port settings
+	tcgetattr(this->serial_fd, &this->oldtio);
 
 	if (serial_fd < 0)
 	{
