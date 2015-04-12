@@ -29,7 +29,6 @@ extern int run;
 static error_t parse_opt (int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
-bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments );
 
 void set_mpd_volume( unsigned int vol_in );
 
@@ -223,20 +222,4 @@ void parse_midi_command(unsigned char *buf, const arguments_t arguments )
 				printf("0x%x Unknown MIDI cmd   %03u %03u %03u\n", operation, channel, param1, param2);
 			break;
 	}
-}
-
-bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments )
-{
-	long int ret = read(fd, buf, count);
-
-	// If ret is 0, then we were unable to read any bytes from the device
-	if ( ret == 0 )
-	{
-		if (!arguments.silent && arguments.verbose)
-			printf("No bytes could be read from the device file. Quitting.\n");
-		run = false;
-		return false;
-	}
-	else	// Successful read
-		return true;
 }

@@ -5,13 +5,13 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <cstdio>
+#include <unistd.h>
 
 using namespace std;
 
 extern int run;
 void set_mpd_volume( unsigned int vol_in );
 void parse_midi_command(unsigned char *buf, const arguments_t arguments );
-bool attempt_serial_read( int fd, void *buf, size_t count, const arguments_t arguments );
 
 //==============================================================================
 
@@ -81,6 +81,22 @@ void SerialReader::open_serial_device( )
 //	ioctl(serial_fd, TIOCSSERIAL, &ser_info);
 }
 
+bool SerialReader::attempt_serial_read( void *buf, size_t count )
+{
+	long int ret = read(this->serial_fd, buf, count);
+
+	// If ret is 0, then we were unable to read any bytes from the device
+	if ( ret == 0 )
+	{
+		if (!this->arguments.silent && this->arguments.verbose)
+			printf("No bytes could be read from the device file. Quitting.\n");
+		run = false;
+		return false;
+	}
+	else	// Successful read
+		return true;
+}
+
 void SerialReader::read_midi_from_serial_port( )
 {
 	unsigned char buf[3];
@@ -91,7 +107,7 @@ void SerialReader::read_midi_from_serial_port( )
 	if (!arguments.printonly) {
 		do
 		{
-			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+			if ( !attempt_serial_read(buf, 1) )
 				break;
 		}
 		while (buf[0] >> 7 == 0);
@@ -104,7 +120,7 @@ void SerialReader::read_midi_from_serial_port( )
 		// serial port.
 		if (arguments.printonly)
 		{
-			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+			if ( !attempt_serial_read(buf, 1) )
 				break;
 
 			printf("%x\t", (int) buf[0]&0xFF);
@@ -117,7 +133,7 @@ void SerialReader::read_midi_from_serial_port( )
 
 		while (i < 3)
 		{
-			if ( !attempt_serial_read(serial_fd, buf+i, 1, arguments) )
+			if ( !attempt_serial_read(buf+i, 1) )
 				break;
 
 			if (buf[i] >> 7 != 0) {
@@ -144,13 +160,13 @@ void SerialReader::read_midi_from_serial_port( )
 		// Print comment message (the ones that start with 0xFF 0x00 0x00)
 		if (buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00)
 		{
-			if ( !attempt_serial_read(serial_fd, buf, 1, arguments) )
+			if ( !attempt_serial_read(buf, 1) )
 				break;
 
 			msglen = buf[0];
 			if (msglen > MAX_MSG_SIZE-1) msglen = MAX_MSG_SIZE-1;
 
-			if ( !attempt_serial_read(serial_fd, msg, msglen, arguments) )
+			if ( !attempt_serial_read(msg, msglen) )
 				break;
 
 			if (arguments.silent) continue;
