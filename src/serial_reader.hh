@@ -14,7 +14,7 @@ struct SerialReader
 	arguments(args_in), serial_fd(-1), device_open(false)
 	{ }
 
-	void open_serial_device( );
+	bool open_serial_device( );
 	void close_serial_device();
 	bool attempt_serial_read( void *buf, size_t count );
 	void read_midi_from_serial_port( );

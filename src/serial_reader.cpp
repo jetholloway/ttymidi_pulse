@@ -29,7 +29,7 @@ int SerialReader::get_fd()
 	return serial_fd;
 }
 
-void SerialReader::open_serial_device( )
+bool SerialReader::open_serial_device( )
 {
 	struct termios newtio;
 
@@ -49,10 +49,7 @@ void SerialReader::open_serial_device( )
 	tcgetattr(this->serial_fd, &this->oldtio);
 
 	if (serial_fd < 0)
-	{
-		perror(arguments.serialdevice);
-		exit(-1);
-	}
+		return false;
 
 	// clear struct for new port settings
 	bzero(&newtio, sizeof(newtio));
@@ -99,6 +96,8 @@ void SerialReader::open_serial_device( )
 //	ioctl(serial_fd, TIOCSSERIAL, &ser_info);
 
 	device_open = true;
+
+	return true;
 }
 
 bool SerialReader::attempt_serial_read( void *buf, size_t count )
@@ -136,7 +135,11 @@ void SerialReader::read_midi_from_serial_port( )
 	size_t msglen;
 
 	cerr << "Opening device... ";
-	this->open_serial_device();
+	if ( this->open_serial_device() )
+		cerr << "OK." << endl;
+	else
+		cerr << "Failed." << endl;
+
 	// Lets first fast forward to first status byte...
 	//   This must be done every time the device is opened.  So it makes sense
 	// to put it in this function.
