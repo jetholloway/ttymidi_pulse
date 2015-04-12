@@ -15,7 +15,7 @@ GDBusConnection *pulse_conn;
 
 void set_mpd_volume( unsigned int vol_in );
 
-void set_mpd_volume( unsigned int vol_in )
+void set_mpd_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
 {
 	vector<string> clients, mpd_stream_paths;
 
@@ -27,7 +27,7 @@ void set_mpd_volume( unsigned int vol_in )
 	{
 		map<string,string> properties = get_property_list(pulse_conn, "org.PulseAudio.Core1.Client", c.c_str() );
 
-		if ( properties["application.name"] == (string)"Music Player Daemon" )
+		if ( properties.find(prop_name) != properties.end() and properties[prop_name] == (string)prop_val )
 			for ( const string & path : get_playback_streams( pulse_conn, c.c_str() ) )
 				mpd_stream_paths.push_back(path);
 	}
@@ -48,12 +48,28 @@ void set_mpd_volume( unsigned int vol_in )
 	}
 }
 
+struct Fader_Program_Mapping
+{
+	int channel;
+	const char *prop_name, *prop_val;
+};
+
 struct MIDIHandler_Program_Volume : MIDICommandHandler
 {
+	const size_t nr_rules = 2;
+	const Fader_Program_Mapping rules[2] =
+	{
+		{0, "application.name", "Music Player Daemon"},
+		{1, "application.process.binary", "mplayer2"}
+	};
+
 	virtual void pitch_bend(int channel, int pitch)
 	{
-		if ( channel == 0 )
-			set_mpd_volume(4*(pitch+8192));
+		for ( const auto & rule : rules )
+		{
+			if ( channel == rule.channel )
+				set_mpd_volume(4*(pitch+8192), rule.prop_name, rule.prop_val);
+		}
 	}
 };
 
