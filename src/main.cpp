@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <thread>
+#include <cmath>
 
 using namespace std;
 
@@ -68,7 +69,19 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 		for ( const auto & rule : rules )
 		{
 			if ( channel == rule.channel )
-				set_mpd_volume(4*(pitch+8192), rule.prop_name, rule.prop_val);
+			{
+				double x = 4*(pitch+8192); // number 0-65535
+				//   All of the following constants I got from a Log fit in
+				// gnumeric.  I plotted the data of 'fader level' vs 'fader
+				// travel in mm'.
+				double y = 18864.560759108*log(x+2046.27968)-144258.687272491 ;
+				int y2 = (int)y;
+				if ( y2 < 0 )
+					y2 = 0;
+				if ( y2 > 65535)
+					y2 = 65535;
+				set_mpd_volume(y2, rule.prop_name, rule.prop_val);
+			}
 		}
 	}
 };
