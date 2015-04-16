@@ -102,37 +102,22 @@ GDBusConnection* get_pulseaudio_bus()
 GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path )
 {
 	GVariant *temp_tva, *temp_va, *temp_a;
-	GDBusProxy *proxy;
 	GError *error = NULL;
 
-	// Interface Proxy
-	//   Note: we are not connected to a bus, but a direct peer-to-peer
-	// connection, so the bus name is NULL
-	proxy = g_dbus_proxy_new_sync(
-	        conn,
-	        G_DBUS_PROXY_FLAGS_NONE,
-	        NULL,                              // Interface info struct (opt.)
-	        NULL,                              // Bus Name
-	        path,           // Path of object
-	        "org.freedesktop.DBus.Properties", // Interface
-	        NULL,                              // GCancellable
-	        &error );
+	temp_tva = g_dbus_connection_call_sync(
+		conn,
+		NULL,                              // Bus name
+		path,                              // Path of object
+		"org.freedesktop.DBus.Properties", // Interface name
+		"Get",                             // Method name
+		g_variant_new("(ss)",interface,get_method_name), // Params
+		NULL,                              // reply type
+		G_DBUS_CALL_FLAGS_NONE,
+		-1,                                // Timeout
+		NULL,                              // Cancellable
+		&error
+	);
 	print_errors(error);
-
-	// Array of paths
-	// temp_gv is a tuple, of a single variant, of an array, of object paths
-	//   Note that for some filthy reason, you are able to use a floating
-	// GVariant for the parameters.
-	temp_tva = g_dbus_proxy_call_sync(
-	          proxy,
-	          "Get",                  // Method name
-	          g_variant_new("(ss)",interface,get_method_name), // Params
-	          G_DBUS_CALL_FLAGS_NONE,
-	          -1,                     // Timeout
-	          NULL,                   // Cancellable
-	          &error );
-	print_errors(error);
-	g_object_unref(proxy);
 
 	// extract the array out of the tuple of variant
 	temp_va = g_variant_get_child_value(temp_tva,0);
@@ -148,37 +133,21 @@ GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, con
 void set_things_gv( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path, GVariant* input )
 {
 	GVariant *temp_tva;
-	GDBusProxy *proxy;
 	GError *error = NULL;
 
-	// Interface Proxy
-	//   Note: we are not connected to a bus, but a direct peer-to-peer
-	// connection, so the bus name is NULL
-	proxy = g_dbus_proxy_new_sync(
-	        conn,
-	        G_DBUS_PROXY_FLAGS_NONE,
-	        NULL,                              // Interface info struct (opt.)
-	        NULL,                              // Bus Name
-	        path,           // Path of object
-	        "org.freedesktop.DBus.Properties", // Interface
-	        NULL,                              // GCancellable
-	        &error );
-	print_errors(error);
-
-	// Array of paths
-	// temp_gv is a tuple, of a single variant, of an array, of object paths
-	//   Note that for some filthy reason, you are able to use a floating
-	// GVariant for the parameters.
-	temp_tva = g_dbus_proxy_call_sync(
-	          proxy,
-	          "Set",                  // Method name
-	          g_variant_new("(ssv)",interface,get_method_name,input), // Params
-	          G_DBUS_CALL_FLAGS_NONE,
-	          -1,                     // Timeout
-	          NULL,                   // Cancellable
-	          &error );
-	print_errors(error);
-	g_object_unref(proxy);
+	temp_tva = g_dbus_connection_call_sync(
+		conn,
+		NULL,                              // Bus name
+		path,                              // Path of object
+		"org.freedesktop.DBus.Properties", // Interface name
+		"Set",                             // Method name
+		g_variant_new("(ssv)",interface,get_method_name,input), // Params
+		NULL,                              // reply type
+		G_DBUS_CALL_FLAGS_NONE,
+		-1,                                // Timeout
+		NULL,                              // Cancellable
+		&error
+	);
 
 	// Clean up
 	g_variant_unref(temp_tva);
