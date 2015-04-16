@@ -43,13 +43,14 @@ bool print_errors( GError *e )
 GDBusConnection* get_pulseaudio_bus()
 {
 	GError *error = NULL;
-	const char* pulse_server_string = NULL;
+	string pulse_server_string;
 	GDBusConnection *answer;
 
 	// Try environment variable
-	pulse_server_string = getenv("PULSE_DBUS_SERVER");
+	if ( getenv("PULSE_DBUS_SERVER") != NULL )
+		pulse_server_string = getenv("PULSE_DBUS_SERVER");
 
-	if ( pulse_server_string == NULL )
+	if ( pulse_server_string == "" )
 	{
 		// Otherwise, try using DBus
 		GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
@@ -70,9 +71,13 @@ GDBusConnection* get_pulseaudio_bus()
 
 		g_dbus_connection_close_sync(connection, NULL, &error );
 		print_errors(error);
+
+		g_variant_unref(gvp);
+		g_object_unref(proxy);
+		g_object_unref(connection);
 	}
 
-	if ( pulse_server_string == NULL )
+	if ( pulse_server_string == "" )
 	{
 		cerr << "Unable to find PulseAudio bus name" << endl;
 		exit(1);
@@ -81,7 +86,7 @@ GDBusConnection* get_pulseaudio_bus()
 	cout << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
-	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
+	answer = g_dbus_connection_new_for_address_sync( pulse_server_string.c_str(),  // Address
 	                                                 G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
 	                                                 NULL,  // GDBusAuthObserver
 	                                                 NULL,  // GCancellable
