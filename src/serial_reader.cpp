@@ -114,18 +114,19 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 	// If ret is 0, then we were unable to read any bytes from the device
 	if ( ret == 0 )
 	{
-		if (!this->arguments.silent && this->arguments.verbose)
-			cerr << "No bytes could be read from the device file. Quitting." << endl;
+		if (!this->arguments.silent)
+			cerr << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
 		device_open = false;
 		return false;
 	}
 	// If ret = -1, then an error occurred
 	else if ( ret == -1 )
 	{
-		if (!this->arguments.silent && this->arguments.verbose)
+		if (!this->arguments.silent)
 		{
 			cerr << "Error reading from serial device. ";
 			perror("read()");
+			cerr << "Will try to re-open the device file." << endl;
 		}
 		device_open = false;
 		return false;
@@ -149,11 +150,16 @@ void SerialReader::read_midi_from_serial_port( )
 	// just keep running in a loop
 	while (run)
 	{
-		cerr << "Opening device... ";
-		if ( this->open_serial_device() )
-			cerr << "OK." << endl;
+		if (!this->arguments.silent)
+		{
+			cerr << "Attempting to open device... ";
+			if ( this->open_serial_device() )
+				cerr << "OK." << endl;
+			else
+				cerr << "Failed." << endl;
+		}
 		else
-			cerr << "Failed." << endl;
+			this->open_serial_device();
 
 		// Lets first fast forward to first status byte...
 		//   This must be done every time the device is opened, so it makes
@@ -244,6 +250,6 @@ void SerialReader::read_midi_from_serial_port( )
 		sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 	}
 
-	if (!arguments.silent && arguments.verbose)
-		cout << "Exitted loop in read_midi_from_serial_port()" << endl;
+	if (!arguments.silent)
+		cout << "Exited loop in read_midi_from_serial_port()" << endl;
 }

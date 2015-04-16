@@ -78,7 +78,7 @@ GDBusConnection* get_pulseaudio_bus()
 		exit(1);
 	}
 
-	cout << "PulseAudio bus: " << pulse_server_string << endl;
+	cout << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
 	answer = g_dbus_connection_new_for_address_sync( pulse_server_string,  // Address
