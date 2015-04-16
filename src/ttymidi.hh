@@ -28,6 +28,10 @@ typedef struct _arguments
 	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
+//   This is a struct which does something with MIDI commands.  You need to
+// instantiate a concrete class which inherits from this, because otherwise
+// the program won't have anything to do with all of the MIDI commands it is
+// recieving.
 struct MIDICommandHandler
 {
 	virtual void note_on(__attribute__((unused)) int channel, __attribute__((unused)) int key, __attribute__((unused)) int velocity) {}

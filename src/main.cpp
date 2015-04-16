@@ -55,6 +55,9 @@ struct Fader_Program_Mapping
 	const char *prop_name, *prop_val;
 };
 
+//   This is a concrete example of a MIDICommandHandler.  When we get a MIDI
+// command, we will use PulseAudio to control some volumes.  This is the only
+// piece of code which connects the 'ttymidi' side with the 'Pulse DBus' side.
 struct MIDIHandler_Program_Volume : MIDICommandHandler
 {
 	const size_t nr_rules = 2;
@@ -92,10 +95,10 @@ int main(int argc, char** argv)
 	arguments_t arguments;
 	MIDIHandler_Program_Volume handler;
 
-	// Parse the arguments
+	// Parse the command-line arguments
 	arguments = parse_all_the_arguments(argc, argv);
 
-	// Open the serial port device
+	// Create an object to handle the serial device
 	SerialReader serial_reader(arguments, &handler);
 
 	if (arguments.printonly)
@@ -118,6 +121,8 @@ int main(int argc, char** argv)
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
+	//   Do nothing.  This thread just waits until run=false (which is set by
+	// exit_cli() when we get a SIGINT or SIGTERM.
 	while (run)
 	{
 		sleep(1);

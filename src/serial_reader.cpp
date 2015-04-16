@@ -26,10 +26,16 @@ void SerialReader::close_serial_device()
 	device_open = false;
 }
 
+//   Attempts to open a serial device's file.  This will fail if the serial
+// device is not connected, so in that case, it will return false.  Upon
+// success, it will also set 'device_open', so that the SerialReader knows that
+// the device file is indeed open.
 bool SerialReader::open_serial_device( )
 {
 	struct termios newtio;
 
+	//   This should never happen.  If it does then that means the programmer
+	// has made an error.
 	if ( device_open )
 	{
 		cerr << "open_serial_device(): device_open = true (i.e. device already open)" << endl;
@@ -97,6 +103,10 @@ bool SerialReader::open_serial_device( )
 	return true;
 }
 
+//   Attemps to read from a serial device's file.  Since a serial device could
+// be removed at any time, this is not a reliable operation.  So, if the read
+// fails, it will tell the SerialReader that the device is no longer open, and
+// will return false, so that you can attempt to re-open it later
 bool SerialReader::attempt_serial_read( void *buf, size_t count )
 {
 	long int ret = read(this->serial_fd, buf, count);
@@ -109,6 +119,7 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 		device_open = false;
 		return false;
 	}
+	// If ret = -1, then an error occurred
 	else if ( ret == -1 )
 	{
 		if (!this->arguments.silent && this->arguments.verbose)
@@ -123,13 +134,19 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 		return true;
 }
 
+//   This is the main loop of the program.  It waits for bytes from the serial
+// device, and gives them to MIDICommandHandler::parse_midi_command() to decode.
+// It also handles the re-opening of the serial device if it gets closed for
+// whatever reason.
 void SerialReader::read_midi_from_serial_port( )
 {
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
 
-	// Note: run can be set to 0 by the function attempt_serial_read()
+	//   Note: run can be set to 0 by the function exit_cli().  This happens
+	// when the program gets a SIGINT or SIGTERM signal.  Until that happens,
+	// just keep running in a loop
 	while (run)
 	{
 		cerr << "Opening device... ";
@@ -139,8 +156,8 @@ void SerialReader::read_midi_from_serial_port( )
 			cerr << "Failed." << endl;
 
 		// Lets first fast forward to first status byte...
-		//   This must be done every time the device is opened.  So it makes sense
-		// to put it in this function.
+		//   This must be done every time the device is opened, so it makes
+		// sense to put this here.
 		if ( this->device_open and !arguments.printonly )
 		{
 			do
@@ -151,11 +168,12 @@ void SerialReader::read_midi_from_serial_port( )
 			while (buf[0] >> 7 == 0);
 		}
 
-		// Keep getting MIDI bytes as long as the device is open, and we are running
+		//   Keep getting MIDI bytes as long as the device is open, and we are
+		// running.
 		while (run && this->device_open)
 		{
-			//   super-debug mode: only print to screen whatever comes through the
-			// serial port.
+			//   super-debug mode: only print to screen whatever comes through
+			// the serial port.
 			if (arguments.printonly)
 			{
 				if ( !attempt_serial_read(buf, 1) )
@@ -221,7 +239,8 @@ void SerialReader::read_midi_from_serial_port( )
 				midi_command_handler->parse_midi_command(buf, arguments);
 		}
 
-		// Don't try to re-open device until 1 second
+		//   Don't try to re-open device until some time passes (so we don't eat
+		// all of the CPU).
 		sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 	}
 

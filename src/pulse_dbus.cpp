@@ -26,6 +26,7 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 );
 
 //==============================================================================
 
+// Prints any Glib errors
 bool print_errors( GError *e )
 {
 	if ( e != NULL )
@@ -38,6 +39,7 @@ bool print_errors( GError *e )
 		return 0;
 }
 
+// Connects to PulseAudio via DBus
 GDBusConnection* get_pulseaudio_bus()
 {
 	GError *error = NULL;
@@ -89,6 +91,9 @@ GDBusConnection* get_pulseaudio_bus()
 	return answer;
 }
 
+//   Gets general things from PulseAudio.  This could include: clients, sinks,
+// etc.  It returns them in a GVariant.  This function is meant to be wrapped by
+// another function which returns the thigns in a nicer data structure
 GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, const char * interface, const char * path )
 {
 	GVariant *temp_tva, *temp_va, *temp_a;
@@ -232,30 +237,35 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 )
 	return answer;
 }
 
+// Gets all of the clients, and returns their DBus paths
 vector<string> get_clients( GDBusConnection *conn )
 {
 	GVariant * gv = get_things_gv( conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 	return gv_to_vs(gv);
 }
 
+// Gets all of the sinks, and returns their DBus paths
 vector<string> get_sinks( GDBusConnection *conn )
 {
 	GVariant * gv = get_things_gv( conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 	return gv_to_vs(gv);
 }
 
+// Gets all of a clients playback streams, and returns their DBus paths
 vector<string> get_playback_streams( GDBusConnection *conn, const char * path )
 {
 	GVariant * gv = get_things_gv( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
 	return gv_to_vs(gv);
 }
 
+// Gets a stream's volume
 vector<uint32_t> get_volume( GDBusConnection *conn, const char * path )
 {
 	GVariant * gv = get_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path );
 	return gv_to_vuint32(gv);
 }
 
+// Sets a stream's volume
 void set_volume( GDBusConnection *conn, const char * path, const vector<uint32_t> & vols )
 {
 	GVariant * gv = vuint32_to_gv(vols);
@@ -263,6 +273,7 @@ void set_volume( GDBusConnection *conn, const char * path, const vector<uint32_t
 	// Apparently you don't have to free 'gv', as it is already freed or some shit
 }
 
+// Get's a PulseAudio object's properties
 map<string,string> get_property_list( GDBusConnection* conn, const char *interface, const char *path )
 {
 	GVariant *gv_adsab;
