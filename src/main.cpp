@@ -60,11 +60,12 @@ struct Fader_Program_Mapping
 // piece of code which connects the 'ttymidi' side with the 'Pulse DBus' side.
 struct MIDIHandler_Program_Volume : MIDICommandHandler
 {
-	const size_t nr_rules = 2;
-	const Fader_Program_Mapping rules[2] =
+	const size_t nr_rules = 3;
+	const Fader_Program_Mapping rules[3] =
 	{
 		{0, "application.name", "Music Player Daemon"},
-		{1, "application.process.binary", "mplayer2"}
+		{1, "application.process.binary", "mplayer2"},
+		{2, "application.process.binary", "iceweasel"},
 	};
 
 	virtual void pitch_bend(int channel, int pitch)
