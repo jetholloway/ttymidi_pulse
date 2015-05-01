@@ -126,20 +126,6 @@ int main(int argc, char** argv)
 	while (run)
 	{
 		sleep(1);
-
-		if ( thr.joinable() )
-		{
-			cout << "joining thread" << endl;
-			thr.join();
-			cout << "joined thread" << endl;
-		}
-	}
-
-	if ( thr.joinable() )
-	{
-		cout << "joining thread" << endl;
-		thr.join();
-		cout << "joined thread" << endl;
 	}
 
 	cout << "exitted loop in main()" << endl;
