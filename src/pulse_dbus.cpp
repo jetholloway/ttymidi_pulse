@@ -200,13 +200,13 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 )
 
 	// Add all of the values to the builder
 	for ( uint32_t u : vuint32 )
-		g_variant_builder_add (builder, "u", u);
+		g_variant_builder_add(builder, "u", u);
 
 	// Convert the builder into an actual GVariant
-	answer = g_variant_new ("au", builder);
+	answer = g_variant_new("au", builder);
 
 	// Clean up
-	g_variant_builder_unref (builder);
+	g_variant_builder_unref(builder);
 
 	return answer;
 }
