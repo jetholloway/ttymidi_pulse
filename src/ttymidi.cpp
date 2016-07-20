@@ -21,6 +21,9 @@
 #include <string.h>
 #include <termios.h>
 #include <argp.h>
+#include <iostream>
+
+using namespace std;
 
 // This is a global variable so you know when the threads have to stop running
 extern int run;
@@ -47,7 +50,7 @@ static struct argp_option options[] =
 void exit_cli(__attribute__((unused)) int sig)
 {
 	run = false;
-	printf("\rttymidi closing down ... ");
+	cout << "ttymidi closing down ... " << endl;
 }
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
@@ -90,7 +93,9 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 					case 38400  : arguments->baudrate = B38400 ; break;
 					case 57600  : arguments->baudrate = B57600 ; break;
 					case 115200 : arguments->baudrate = B115200; break;
-					default: printf("Baud rate %lui is not supported.\n",baud_temp); exit(1);
+					default:
+						cout << "Baud rate " << baud_temp << " is not supported." << endl;
+						exit(1);
 				}
 
 		case ARGP_KEY_ARG:

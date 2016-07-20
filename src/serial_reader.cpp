@@ -123,11 +123,7 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 	else if ( ret == -1 )
 	{
 		if (!this->arguments.silent)
-		{
-			cerr << "Error reading from serial device. ";
-			perror("read()");
-			cerr << "Will try to re-open the device file." << endl;
-		}
+			cerr << "Error reading from serial device.  Will try to re-open the device file." << endl;
 		device_open = false;
 		return false;
 	}
@@ -185,8 +181,7 @@ void SerialReader::read_midi_from_serial_port( )
 				if ( !attempt_serial_read(buf, 1) )
 					break;
 
-				printf("%x\t", (int) buf[0]&0xFF);
-				fflush(stdout);
+				cout << hex << (int)buf[0] << "\t" << flush;
 				continue;
 			}
 
@@ -240,10 +235,7 @@ void SerialReader::read_midi_from_serial_port( )
 					// Make sure the string ends with a null character
 					msg[msglen] = 0;
 
-					puts("0xFF Non-MIDI message: ");
-					puts(msg);
-					putchar('\n');
-					fflush(stdout);
+					cout << "0xFF Non-MIDI message: " << msg << endl;
 				}
 			}
 			else
