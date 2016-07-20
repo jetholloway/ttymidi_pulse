@@ -267,13 +267,11 @@ void SerialReader::read_midi_from_serial_port( )
 				if ( !attempt_serial_read(msg, msglen) )
 					break;
 
-				if ( !arguments.silent )
-				{
-					// Make sure the string ends with a null character
-					msg[msglen] = 0;
+				// Make sure the string ends with a null character
+				msg[msglen] = 0;
 
+				if ( !arguments.silent )
 					cout << "0xFF Non-MIDI message: " << msg << endl;
-				}
 			}
 			else
 			// We have received a full MIDI message
