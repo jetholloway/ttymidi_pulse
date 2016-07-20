@@ -66,7 +66,7 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 		// MIDI Channel nr, pulse property, pulse property value
 		{0, "application.name", "Music Player Daemon"},
 		{1, "application.process.binary", "mplayer2"},
-		{2, "application.process.binary", "iceweasel"},
+		{2, "application.process.binary", "firefox"},
 	};
 
 	virtual void pitch_bend(int channel, int pitch)
