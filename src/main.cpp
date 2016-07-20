@@ -114,9 +114,9 @@ int main(int argc, char** argv)
 	//------------------------------------------------------
 	// Start the thread that polls serial data
 	run = true;
-	// Thread for polling serial data. As serial is currently read in blocking
-	//  mode, by this we can enable ctrl+c quiting and avoid zombie alsa ports
-	//  when killing app with ctrl+z
+	//   Thread for polling serial data.  As serial is currently read in
+	// blocking mode, by this we can enable ctrl+C quitting and avoid zombie
+	// alsa ports when killing app with ctrl+Z
 	thread thr(&SerialReader::read_midi_from_serial_port, serial_reader);
 	thr.detach();
 

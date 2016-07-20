@@ -25,7 +25,7 @@
 // This is a global variable so you know when the threads have to stop running
 extern int run;
 
-static error_t parse_opt (int key, char *arg, struct argp_state *state);
+static error_t parse_opt(int key, char *arg, struct argp_state *state);
 void arg_set_defaults(arguments_t *arguments_local);
 
 void set_mpd_volume( unsigned int vol_in );
@@ -50,7 +50,7 @@ void exit_cli(__attribute__((unused)) int sig)
 	printf("\rttymidi closing down ... ");
 }
 
-static error_t parse_opt (int key, char *arg, struct argp_state *state)
+static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
 	//   Get the input argument from argp_parse, which we know is a pointer to
 	// our arguments structure.
@@ -123,7 +123,7 @@ const char *argp_program_bug_address = "tvst@hotmail.com";
 arguments_t parse_all_the_arguments(int argc, char** argv)
 {
 	arguments_t answer;
-	static char doc[]       = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
+	static char doc[] = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
 	static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
 
 	arg_set_defaults(&answer);
