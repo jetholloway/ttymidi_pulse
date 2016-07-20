@@ -18,7 +18,6 @@ extern int run;
 
 void SerialReader::close_serial_device()
 {
-	cout << "Restoring old terminal attributes, and closing device" << endl;
 	tcsetattr( this->serial_fd, TCSANOW, &this->oldtio );
 
 	close( this->serial_fd );

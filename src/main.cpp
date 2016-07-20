@@ -134,6 +134,7 @@ int main(int argc, char** argv)
 
 	//------------------------------------------------------
 	// restore the old port settings
+	cout << "Restoring old terminal attributes, and closing device" << endl;
 	serial_reader.close_serial_device();
 	cout << endl << "done!" << endl;
 
