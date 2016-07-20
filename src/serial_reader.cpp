@@ -183,21 +183,32 @@ void SerialReader::read_midi_from_serial_port( )
 	// just keep running in a loop
 	while (run)
 	{
-		if ( !this->arguments.silent )
+		// Keep trying to open the device until it opens
+		while (run)
 		{
-			cerr << "Attempting to open device... ";
-			if ( this->open_serial_device() )
-				cerr << "OK." << endl;
+			if ( !this->arguments.silent )
+			{
+				cerr << "Attempting to open device... ";
+				if ( this->open_serial_device() )
+					cerr << "OK." << endl;
+				else
+					cerr << "Failed." << endl;
+			}
 			else
-				cerr << "Failed." << endl;
+				this->open_serial_device();
+
+			if ( this->device_open )
+				break;
+
+			//   Don't try to re-open device until some time passes (so we don't eat
+			// all of the CPU).
+			sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 		}
-		else
-			this->open_serial_device();
 
 		// Lets first fast forward to first status byte...
 		//   This must be done every time the device is opened, so it makes
 		// sense to put this here.
-		if ( this->device_open and !arguments.printonly )
+		if ( !arguments.printonly )
 		{
 			do
 			{
@@ -277,10 +288,6 @@ void SerialReader::read_midi_from_serial_port( )
 			// We have received a full MIDI message
 				midi_command_handler->parse_midi_command(buf, arguments);
 		}
-
-		//   Don't try to re-open device until some time passes (so we don't eat
-		// all of the CPU).
-		sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 	}
 
 	if (!arguments.silent)
