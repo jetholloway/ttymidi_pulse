@@ -8,6 +8,9 @@
 
 // Seconds to wait between successive attempts to re-open the serial device
 #define SERIAL_DEVICE_REOPEN_SECONDS 1
+//   Seconds to wait for a message to be read from the device before we close and
+// re-open it
+#define NO_MESSAGE_RECEIVED_TIMEOUT  3
 #define MAX_MSG_SIZE                 1024
 
 using namespace std;
@@ -102,25 +105,61 @@ bool SerialReader::open_serial_device( )
 	return true;
 }
 
-//   Attemps to read from a serial device's file.  Since a serial device could
-// be removed at any time, this is not a reliable operation.  So, if the read
-// fails, it will tell the SerialReader that the device is no longer open, and
-// will return false, so that you can attempt to re-open it later
+//   Attempts to read from a serial device's file.
+//   Since a serial device could be removed at any time, this is not a reliable
+// operation.  So, if the read fails, it will tell the SerialReader that the
+// device is no longer open, and will return false, so that you can attempt to
+// re-open it later.
+//   Also, if the serial device returns no data within some timeout, it will be
+// closed.  (The device can then be re-opened in read_midi_from_serial_port().)
 bool SerialReader::attempt_serial_read( void *buf, size_t count )
 {
-	long int ret = read(this->serial_fd, buf, count);
+	// Define a set of files to watch with select()
+	fd_set file_set;
+	FD_ZERO(&file_set);                 // Clear the set
+	FD_SET(this->serial_fd, &file_set); // Add our file descriptor to the set
+
+	// Define a timeout
+	struct timeval timeout;
+	timeout.tv_sec = NO_MESSAGE_RECEIVED_TIMEOUT;
+	timeout.tv_usec = 0;
+
+	// Wait to the device to become readable,
+	int ret_select = select(this->serial_fd + 1, &file_set, NULL, NULL, &timeout);
 
 	if ( !this->arguments.silent )
 	{
-		if ( ret == 0 )
+		if( ret_select == 0 )
+		// A timeout occurred
+			cout << "Timeout reading from serial device" << endl;
+		else if( ret_select == -1 )
+		// An error occurred
+			cerr << "SerialReader::attempt_serial_read(): Error from select()" << endl;
+	}
+
+	if ( ret_select == 0 or ret_select == -1 )
+	// An error/timeout occurred
+	{
+		// Close the file, and return with error
+		this->close_serial_device();
+
+		return false;
+	}
+
+	// Perform the actual read, and handle errors
+	ssize_t ret_read = read(this->serial_fd, buf, count);
+
+	if ( !this->arguments.silent )
+	{
+		if ( ret_read == 0 )
 		// Unable to read any bytes from the device
 			cerr << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
-		else if ( ret == -1 )
+		else if ( ret_read == -1 )
 		// An error occurred
 			cerr << "Error reading from serial device.  Will try to re-open the device file." << endl;
 	}
 
-	if ( ret == 0 or ret == -1 )
+	if ( ret_read == 0 or ret_read == -1 )
 	{
 		this->device_open = false;
 		return false;
