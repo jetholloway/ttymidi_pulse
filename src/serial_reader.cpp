@@ -111,20 +111,19 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 {
 	long int ret = read(this->serial_fd, buf, count);
 
-	// If ret is 0, then we were unable to read any bytes from the device
-	if ( ret == 0 )
+	if ( !this->arguments.silent )
 	{
-		if (!this->arguments.silent)
+		if ( ret == 0 )
+		// Unable to read any bytes from the device
 			cerr << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
-		device_open = false;
-		return false;
-	}
-	// If ret = -1, then an error occurred
-	else if ( ret == -1 )
-	{
-		if (!this->arguments.silent)
+		else if ( ret == -1 )
+		// An error occurred
 			cerr << "Error reading from serial device.  Will try to re-open the device file." << endl;
-		device_open = false;
+	}
+
+	if ( ret == 0 or ret == -1 )
+	{
+		this->device_open = false;
 		return false;
 	}
 	else	// Successful read
