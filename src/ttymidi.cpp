@@ -107,11 +107,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 void arg_set_defaults(arguments_t *arguments)
 {
 	const char *serialdevice_temp = "/dev/ttyUSB0";
-	arguments->printonly    = 0;
-	arguments->silent       = 0;
-	arguments->verbose      = 0;
-	arguments->baudrate     = B115200;
-	char *name_tmp		= (char *)"ttymidi";
+	char *name_tmp          = (char *)"ttymidi";
+
+	arguments->printonly = 0;
+	arguments->silent    = 0;
+	arguments->verbose   = 0;
+	arguments->baudrate  = B115200;
+
 	strncpy(arguments->serialdevice, serialdevice_temp, MAX_DEV_STR_LEN);
 	strncpy(arguments->name, name_tmp, MAX_DEV_STR_LEN);
 }
