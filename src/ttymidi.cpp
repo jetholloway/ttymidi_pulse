@@ -69,11 +69,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			arguments->verbose = true;
 			break;
 		case 's':
-			if (arg == NULL) break;
+			if (arg == NULL)
+				break;
 			arguments->serialdevice = arg;
 			break;
 		case 'b':
-			if (arg == NULL) break;
+			if (arg == NULL)
+				break;
 			baud_temp = strtoul(arg, NULL, 0);
 			if (baud_temp != EINVAL and baud_temp != ERANGE)
 				switch (baud_temp)

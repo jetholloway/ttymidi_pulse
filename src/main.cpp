@@ -104,9 +104,7 @@ int main(int argc, char** argv)
 	SerialReader serial_reader(arguments, &handler);
 
 	if (arguments.printonly)
-	{
 		cout << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
-	}
 
 	// Open the DBus connection
 	pulse_conn = get_pulseaudio_bus();
@@ -126,9 +124,7 @@ int main(int argc, char** argv)
 	//   Do nothing.  This thread just waits until program_running=false (which
 	// is set by exit_cli() when we get a SIGINT or SIGTERM.
 	while (program_running)
-	{
 		sleep(1);
-	}
 
 	cout << "exitted loop in main()" << endl;
 
