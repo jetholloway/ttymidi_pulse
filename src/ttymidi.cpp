@@ -131,6 +131,12 @@ Arguments parse_all_the_arguments(int argc, char** argv)
 		exit(1);
 	}
 
+	if ( answer.printonly and answer.silent )
+	{
+		cerr << "Options 'printonly' and 'silent' are mutually exclusive" << endl;
+		exit(1);
+	}
+
 	return answer;
 }
 

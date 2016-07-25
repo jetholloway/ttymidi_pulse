@@ -24,6 +24,9 @@ private:
 	int serial_fd;
 	struct termios oldtio;
 	bool device_open;
+
+	void main_loop_printonly( );
+	void main_loop_normal( );
 };
 
 #endif // SERIAL_READER_HH

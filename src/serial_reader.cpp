@@ -114,6 +114,10 @@ bool SerialReader::open_serial_device( )
 // closed.  (The device can then be re-opened in read_midi_from_serial_port().)
 bool SerialReader::attempt_serial_read( void *buf, size_t count )
 {
+	// If the device is not open, then just return with error
+	if ( !this->device_open )
+		return false;
+
 	// Define a set of files to watch with select()
 	fd_set file_set;
 	FD_ZERO(&file_set);                 // Clear the set
@@ -168,11 +172,48 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 		return true;
 }
 
-//   This is the main loop of the program.  It waits for bytes from the serial
-// device, and gives them to MIDICommandHandler::parse_midi_command() to decode.
-// It also handles the re-opening of the serial device if it gets closed for
+//   This is the main loop of the program (when the 'printonly' option is
+// selected).  It waits for bytes from the serial device, and prints them.  It
+// also handles the re-opening of the serial device if it gets closed for
 // whatever reason.
-void SerialReader::read_midi_from_serial_port( )
+void SerialReader::main_loop_printonly( )
+{
+	unsigned char c;
+
+	//   Note: run can be set to 0 by the function exit_cli().  This happens
+	// when the program gets a SIGINT or SIGTERM signal.  Until that happens,
+	// just keep running in a loop
+	while (run)
+	{
+		//   Super-debug mode: only print to screen whatever comes through
+		// the serial port.
+		if ( attempt_serial_read(&c, 1) )
+			cout << hex << (int)c << "\t" << flush;
+		else
+		// Read failed
+		{
+			cerr << "Attempting to open device... ";
+			if ( this->open_serial_device() )
+				cerr << "OK." << endl;
+			else
+			{
+				cerr << "Failed." << endl;
+
+				//   Don't try to re-open device until some time passes (so we don't eat
+				// all of the CPU).
+				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
+			}
+		}
+	}
+
+	cout << "Exited loop in main_loop_printonly()" << endl;
+}
+
+//   This is the main loop of the program (when the 'printonly' option is not
+// selected).  It waits for bytes from the serial device, and gives them to
+// MIDICommandHandler::parse_midi_command() to decode.  It also handles the
+// re-opening of the serial device if it gets closed for whatever reason.
+void SerialReader::main_loop_normal( )
 {
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
@@ -208,31 +249,17 @@ void SerialReader::read_midi_from_serial_port( )
 		// Lets first fast forward to first status byte...
 		//   This must be done every time the device is opened, so it makes
 		// sense to put this here.
-		if ( !arguments.printonly )
+		do
 		{
-			do
-			{
-				if ( !attempt_serial_read(buf, 1) )
-					break;
-			}
-			while ( (buf[0] & 0x80) == 0x00 );
+			if ( !attempt_serial_read(buf, 1) )
+				break;
 		}
+		while ( (buf[0] & 0x80) == 0x00 );
 
 		//   Keep getting MIDI bytes as long as the device is open, and we are
 		// running.
 		while ( run and this->device_open )
 		{
-			//   Super-debug mode: only print to screen whatever comes through
-			// the serial port.
-			if ( arguments.printonly )
-			{
-				if ( !attempt_serial_read(buf, 1) )
-					break;
-
-				cout << hex << (int)buf[0] << "\t" << flush;
-				continue;
-			}
-
 			// So let's align to the beginning of a MIDI command.
 			int i = 1;
 
@@ -292,4 +319,12 @@ void SerialReader::read_midi_from_serial_port( )
 
 	if (!arguments.silent)
 		cout << "Exited loop in read_midi_from_serial_port()" << endl;
+}
+
+void SerialReader::read_midi_from_serial_port( )
+{
+	if ( arguments.printonly )
+		main_loop_printonly();
+	else
+		main_loop_normal();
 }
