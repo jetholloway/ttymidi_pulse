@@ -115,7 +115,7 @@ int main(int argc, char** argv)
 	//   Thread for polling serial data.  As serial is currently read in
 	// blocking mode, by this we can enable ctrl+C quitting and avoid zombie
 	// alsa ports when killing app with ctrl+Z
-	thread thr(&SerialReader::read_midi_from_serial_port, serial_reader);
+	thread thr(&SerialReader::main_loop, serial_reader);
 	thr.detach();
 
 	signal(SIGINT, exit_cli);

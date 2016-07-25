@@ -313,7 +313,7 @@ top_of_loop:
 		cout << "Exited loop in read_midi_from_serial_port()" << endl;
 }
 
-void SerialReader::read_midi_from_serial_port( )
+void SerialReader::main_loop( )
 {
 	if ( arguments.printonly )
 		main_loop_printonly();

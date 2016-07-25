@@ -18,7 +18,7 @@ struct SerialReader
 	bool open_serial_device( );
 	void close_serial_device();
 	bool attempt_serial_read( void *buf, size_t count );
-	void read_midi_from_serial_port( );
+	void main_loop( );
 
 private:
 	int serial_fd;
