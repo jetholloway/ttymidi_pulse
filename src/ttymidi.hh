@@ -22,7 +22,7 @@
 
 typedef struct _arguments
 {
-	int  silent, verbose, printonly;
+	bool silent, verbose, printonly;
 	char serialdevice[MAX_DEV_STR_LEN];
 	unsigned int  baudrate;
 	char name[MAX_DEV_STR_LEN];

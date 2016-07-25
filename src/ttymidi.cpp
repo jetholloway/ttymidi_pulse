@@ -63,13 +63,13 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	switch (key)
 	{
 		case 'p':
-			arguments->printonly = 1;
+			arguments->printonly = true;
 			break;
 		case 'q':
-			arguments->silent = 1;
+			arguments->silent = true;
 			break;
 		case 'v':
-			arguments->verbose = 1;
+			arguments->verbose = true;
 			break;
 		case 's':
 			if (arg == NULL) break;
@@ -114,9 +114,9 @@ void arg_set_defaults(arguments_t *arguments)
 	const char *serialdevice_temp = "/dev/ttyUSB0";
 	char *name_tmp          = (char *)"ttymidi";
 
-	arguments->printonly = 0;
-	arguments->silent    = 0;
-	arguments->verbose   = 0;
+	arguments->printonly = false;
+	arguments->silent    = false;
+	arguments->verbose   = false;
 	arguments->baudrate  = B115200;
 
 	strncpy(arguments->serialdevice, serialdevice_temp, MAX_DEV_STR_LEN);
