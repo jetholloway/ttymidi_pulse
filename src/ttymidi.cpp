@@ -31,8 +31,6 @@ extern bool program_running;
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
 void arg_set_defaults(Arguments *arguments_local);
 
-void set_mpd_volume( unsigned int vol_in );
-
 //------------------------------------------------------------------------------
 // Program options
 
@@ -145,7 +143,7 @@ Arguments parse_all_the_arguments(int argc, char** argv)
 //------------------------------------------------------------------------------
 // MIDI stuff
 
-void MIDICommandHandler::parse_midi_command(unsigned char *buf, const Arguments arguments )
+void MIDICommandHandler::parse_midi_command(unsigned char *buf, const Arguments & arguments )
 {
 	/*
 	   MIDI COMMANDS

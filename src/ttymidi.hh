@@ -45,7 +45,7 @@ struct MIDICommandHandler
 	virtual void channel_pressure(__attribute__((unused)) int channel, __attribute__((unused)) int pressure) {}
 	virtual void pitch_bend(__attribute__((unused)) int channel, __attribute__((unused)) int pitch) {}
 
-	void parse_midi_command(unsigned char *buf, const Arguments arguments );
+	void parse_midi_command(unsigned char *buf, const Arguments & arguments );
 };
 
 void exit_cli(int sig);

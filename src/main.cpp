@@ -14,7 +14,7 @@ using namespace std;
 bool program_running;
 GDBusConnection *pulse_conn;
 
-void set_mpd_volume( unsigned int vol_in );
+void set_mpd_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
 
 void set_mpd_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
 {
