@@ -6,12 +6,12 @@
 #include <cstdlib>
 #include <termios.h>
 
-struct SerialReader
+struct SerialMIDIReader
 {
 	const Arguments arguments;
 	MIDICommandHandler * const midi_command_handler;
 
-	SerialReader( const Arguments & args_in, MIDICommandHandler * const handler_in ) :
+	SerialMIDIReader( const Arguments & args_in, MIDICommandHandler * const handler_in ) :
 	arguments(args_in), midi_command_handler(handler_in), serial_fd(-1), device_open(false)
 	{ }
 

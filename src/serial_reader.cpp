@@ -19,7 +19,7 @@ extern bool program_running;
 
 //==============================================================================
 
-void SerialReader::close_serial_device()
+void SerialMIDIReader::close_serial_device()
 {
 	tcsetattr( this->serial_fd, TCSANOW, &this->oldtio );
 
@@ -32,7 +32,7 @@ void SerialReader::close_serial_device()
 // device is not connected, so in that case, it will return false.  Upon
 // success, it will also set 'device_open', so that the SerialReader knows that
 // the device file is indeed open.
-bool SerialReader::open_serial_device( )
+bool SerialMIDIReader::open_serial_device( )
 {
 	struct termios newtio;
 
@@ -112,7 +112,7 @@ bool SerialReader::open_serial_device( )
 // re-open it later.
 //   Also, if the serial device returns no data within some timeout, it will be
 // closed.  (The device can then be re-opened in read_midi_from_serial_port().)
-bool SerialReader::attempt_serial_read( void *buf, size_t count )
+bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 {
 	// If the device is not open, then just return with error
 	if ( !this->device_open )
@@ -176,7 +176,7 @@ bool SerialReader::attempt_serial_read( void *buf, size_t count )
 // selected).  It waits for bytes from the serial device, and prints them.  It
 // also handles the re-opening of the serial device if it gets closed for
 // whatever reason.
-void SerialReader::main_loop_printonly( )
+void SerialMIDIReader::main_loop_printonly( )
 {
 	unsigned char c;
 
@@ -213,7 +213,7 @@ void SerialReader::main_loop_printonly( )
 // selected).  It waits for bytes from the serial device, and gives them to
 // MIDICommandHandler::parse_midi_command() to decode.  It also handles the
 // re-opening of the serial device if it gets closed for whatever reason.
-void SerialReader::main_loop_normal( )
+void SerialMIDIReader::main_loop_normal( )
 {
 	unsigned char c;
 	unsigned char buf[3];
@@ -313,7 +313,7 @@ top_of_loop:
 		cout << "Exited loop in read_midi_from_serial_port()" << endl;
 }
 
-void SerialReader::main_loop( )
+void SerialMIDIReader::main_loop( )
 {
 	if ( arguments.printonly )
 		main_loop_printonly();
