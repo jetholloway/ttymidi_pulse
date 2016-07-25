@@ -25,7 +25,6 @@ typedef struct _arguments
 	bool silent, verbose, printonly;
 	char serialdevice[MAX_DEV_STR_LEN];
 	unsigned int  baudrate;
-	char name[MAX_DEV_STR_LEN];
 } arguments_t;
 
 //   This is a struct which does something with MIDI commands.  You need to

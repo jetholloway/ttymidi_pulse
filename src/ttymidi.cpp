@@ -43,7 +43,6 @@ static struct argp_option options[] =
 	{"verbose"      , 'v', 0     , 0, "For debugging: Produce verbose output", 0 },
 	{"printonly"    , 'p', 0     , 0, "Super debugging: Print values read from serial -- and do nothing else", 0 },
 	{"quiet"        , 'q', 0     , 0, "Don't produce any output, even when the print command is sent", 0 },
-	{"name"         , 'n', "NAME", 0, "Name of the Alsa MIDI client. Default = ttymidi", 0 },
 	{ 0             , 0  , 0     , 0, 0,                                                 0 }
 };
 
@@ -74,10 +73,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 's':
 			if (arg == NULL) break;
 			strncpy(arguments->serialdevice, arg, MAX_DEV_STR_LEN);
-			break;
-		case 'n':
-			if (arg == NULL) break;
-			strncpy(arguments->name, arg, MAX_DEV_STR_LEN);
 			break;
 		case 'b':
 			if (arg == NULL) break;
@@ -112,7 +107,6 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 void arg_set_defaults(arguments_t *arguments)
 {
 	const char *serialdevice_temp = "/dev/ttyUSB0";
-	char *name_tmp          = (char *)"ttymidi";
 
 	arguments->printonly = false;
 	arguments->silent    = false;
@@ -120,7 +114,6 @@ void arg_set_defaults(arguments_t *arguments)
 	arguments->baudrate  = B115200;
 
 	strncpy(arguments->serialdevice, serialdevice_temp, MAX_DEV_STR_LEN);
-	strncpy(arguments->name, name_tmp, MAX_DEV_STR_LEN);
 }
 
 // These are actual global variables which argp wants
