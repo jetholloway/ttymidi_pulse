@@ -77,7 +77,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 		case 'b':
 			if (arg == NULL) break;
 			baud_temp = strtoul(arg, NULL, 0);
-			if (baud_temp != EINVAL && baud_temp != ERANGE)
+			if (baud_temp != EINVAL and baud_temp != ERANGE)
 				switch (baud_temp)
 				{
 					case 1200   : arguments->baudrate = B1200  ; break;

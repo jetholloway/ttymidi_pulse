@@ -220,7 +220,7 @@ void SerialReader::read_midi_from_serial_port( )
 
 		//   Keep getting MIDI bytes as long as the device is open, and we are
 		// running.
-		while ( run && this->device_open )
+		while ( run and this->device_open )
 		{
 			//   Super-debug mode: only print to screen whatever comes through
 			// the serial port.
@@ -257,7 +257,7 @@ void SerialReader::read_midi_from_serial_port( )
 					{
 						//   Lets figure out are we done or should we read one
 						// more byte.
-						if ( (buf[0] & 0xF0) == 0xC0 || (buf[0] & 0xF0) == 0xD0 )
+						if ( (buf[0] & 0xF0) == 0xC0 or (buf[0] & 0xF0) == 0xD0 )
 							i = 3;
 						else
 							i = 2;
@@ -266,7 +266,7 @@ void SerialReader::read_midi_from_serial_port( )
 			}
 
 			// Print comment message (the ones that start with 0xFF 0x00 0x00)
-			if ( buf[0] == 0xFF && buf[1] == 0x00 && buf[2] == 0x00 )
+			if ( buf[0] == 0xFF and buf[1] == 0x00 and buf[2] == 0x00 )
 			{
 				if ( !attempt_serial_read(buf, 1) )
 					break;
