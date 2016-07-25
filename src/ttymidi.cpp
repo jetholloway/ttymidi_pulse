@@ -125,6 +125,12 @@ Arguments parse_all_the_arguments(int argc, char** argv)
 
 	argp_parse(&argp, argc, argv, 0, 0, &answer);
 
+	if ( answer.verbose and answer.silent )
+	{
+		cerr << "Options 'verbose' and 'silent' are mutually exclusive" << endl;
+		exit(1);
+	}
+
 	return answer;
 }
 
@@ -172,44 +178,44 @@ void MIDICommandHandler::parse_midi_command(unsigned char *buf, const Arguments 
 	switch (operation)
 	{
 		case 0x80:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Note off           %03u %03u %03u\n", operation, channel, param1, param2);
 			this->note_on(channel, param1, param2);
 			break;
 
 		case 0x90:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Note on            %03u %03u %03u\n", operation, channel, param1, param2);
 			this->note_off(channel, param1, param2);
 			break;
 
 		case 0xA0:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Pressure change    %03u %03u %03u\n", operation, channel, param1, param2);
 			this->aftertouch(channel, param1, param2);
 			break;
 
 		case 0xB0:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Controller change  %03u %03u %03u\n", operation, channel, param1, param2);
 			this->controller_change(channel, param1, param2);
 			break;
 
 		case 0xC0:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Program change     %03u %03u\n", operation, channel, param1);
 			this->program_change(channel, param1);
 			break;
 
 		case 0xD0:
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Channel pressure   %03u %03u\n", operation, channel, param1);
 			this->channel_pressure(channel, param1);
 			break;
 
 		case 0xE0:
 			param1 = (param1 & 0x7F) + ((param2 & 0x7F) << 7);
-			if (!arguments.silent && arguments.verbose)
+			if (arguments.verbose)
 				printf("Serial  0x%x Pitch bend         %03u %05i\n", operation, channel, param1);
 			this->pitch_bend(channel, param1 - 8192); // in alsa MIDI we want signed int
 			break;
