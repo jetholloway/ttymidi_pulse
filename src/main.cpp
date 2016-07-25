@@ -11,7 +11,7 @@
 using namespace std;
 
 // This is a global variable so you know when the threads have to stop running
-int run;
+bool program_running;
 GDBusConnection *pulse_conn;
 
 void set_mpd_volume( unsigned int vol_in );
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 
 	//------------------------------------------------------
 	// Start the thread that polls serial data
-	run = true;
+	program_running = true;
 	//   Thread for polling serial data.  As serial is currently read in
 	// blocking mode, by this we can enable ctrl+C quitting and avoid zombie
 	// alsa ports when killing app with ctrl+Z
@@ -123,9 +123,9 @@ int main(int argc, char** argv)
 	signal(SIGINT, exit_cli);
 	signal(SIGTERM, exit_cli);
 
-	//   Do nothing.  This thread just waits until run=false (which is set by
-	// exit_cli() when we get a SIGINT or SIGTERM.
-	while (run)
+	//   Do nothing.  This thread just waits until program_running=false (which
+	// is set by exit_cli() when we get a SIGINT or SIGTERM.
+	while (program_running)
 	{
 		sleep(1);
 	}

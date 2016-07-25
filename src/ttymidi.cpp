@@ -26,7 +26,7 @@
 using namespace std;
 
 // This is a global variable so you know when the threads have to stop running
-extern int run;
+extern bool program_running;
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
 void arg_set_defaults(Arguments *arguments_local);
@@ -48,7 +48,7 @@ static struct argp_option options[] =
 
 void exit_cli(__attribute__((unused)) int sig)
 {
-	run = false;
+	program_running = false;
 	cout << "ttymidi closing down ... " << endl;
 }
 

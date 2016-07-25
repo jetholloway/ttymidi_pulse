@@ -15,7 +15,7 @@
 
 using namespace std;
 
-extern int run;
+extern bool program_running;
 
 //==============================================================================
 
@@ -180,10 +180,10 @@ void SerialReader::main_loop_printonly( )
 {
 	unsigned char c;
 
-	//   Note: run can be set to 0 by the function exit_cli().  This happens
-	// when the program gets a SIGINT or SIGTERM signal.  Until that happens,
-	// just keep running in a loop
-	while (run)
+	//   Note: program_running can be set to 0 by the function exit_cli().  This
+	// happens when the program gets a SIGINT or SIGTERM signal.  Until that
+	// happens, just keep running in a loop.
+	while (program_running)
 	{
 		//   Super-debug mode: only print to screen whatever comes through
 		// the serial port.
@@ -220,10 +220,10 @@ void SerialReader::main_loop_normal( )
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
 
-	//   Note: run can be set to 0 by the function exit_cli().  This happens
-	// when the program gets a SIGINT or SIGTERM signal.  Until that happens,
-	// just keep running in a loop
-	while (run)
+	//   Note: program_running can be set to 0 by the function exit_cli().  This
+	// happens when the program gets a SIGINT or SIGTERM signal.  Until that
+	// happens, just keep running in a loop.
+	while (program_running)
 	{
 top_of_loop:
 		// Get MIDI bytes as long as the device is open
@@ -294,7 +294,7 @@ top_of_loop:
 				{
 					if ( !attempt_serial_read(buf, 1) )
 						goto top_of_loop;
-				} while ( run and (buf[0] & 0x80) == 0x00 );
+				} while ( program_running and (buf[0] & 0x80) == 0x00 );
 			}
 			else
 			{
