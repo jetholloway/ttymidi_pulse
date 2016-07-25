@@ -29,7 +29,7 @@ using namespace std;
 extern int run;
 
 static error_t parse_opt(int key, char *arg, struct argp_state *state);
-void arg_set_defaults(arguments_t *arguments_local);
+void arg_set_defaults(Arguments *arguments_local);
 
 void set_mpd_volume( unsigned int vol_in );
 
@@ -56,7 +56,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
 	//   Get the input argument from argp_parse, which we know is a pointer to
 	// our arguments structure.
-	arguments_t *arguments = (arguments_t*)state->input;
+	Arguments *arguments = (Arguments*)state->input;
 	long unsigned int baud_temp;
 
 	switch (key)
@@ -72,7 +72,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 			break;
 		case 's':
 			if (arg == NULL) break;
-			strncpy(arguments->serialdevice, arg, MAX_DEV_STR_LEN);
+			arguments->serialdevice = arg;
 			break;
 		case 'b':
 			if (arg == NULL) break;
@@ -104,29 +104,25 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 	return 0;
 }
 
-void arg_set_defaults(arguments_t *arguments)
+Arguments::Arguments()
 {
-	const char *serialdevice_temp = "/dev/ttyUSB0";
-
-	arguments->printonly = false;
-	arguments->silent    = false;
-	arguments->verbose   = false;
-	arguments->baudrate  = B115200;
-
-	strncpy(arguments->serialdevice, serialdevice_temp, MAX_DEV_STR_LEN);
+	this->printonly = false;
+	this->silent    = false;
+	this->verbose   = false;
+	this->baudrate  = B115200;
+	this->serialdevice = "/dev/ttyUSB0";
 }
 
 // These are actual global variables which argp wants
 const char *argp_program_version     = "ttymidi 0.60";
 const char *argp_program_bug_address = "tvst@hotmail.com";
 
-arguments_t parse_all_the_arguments(int argc, char** argv)
+Arguments parse_all_the_arguments(int argc, char** argv)
 {
-	arguments_t answer;
+	Arguments answer;
 	static char doc[] = "ttymidi - Connect serial port devices to ALSA MIDI programs!";
 	static struct argp argp = { options, parse_opt, 0, doc, NULL, NULL, NULL };
 
-	arg_set_defaults(&answer);
 	argp_parse(&argp, argc, argv, 0, 0, &answer);
 
 	return answer;
@@ -137,7 +133,7 @@ arguments_t parse_all_the_arguments(int argc, char** argv)
 //------------------------------------------------------------------------------
 // MIDI stuff
 
-void MIDICommandHandler::parse_midi_command(unsigned char *buf, const arguments_t arguments )
+void MIDICommandHandler::parse_midi_command(unsigned char *buf, const Arguments arguments )
 {
 	/*
 	   MIDI COMMANDS

@@ -94,7 +94,7 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 int main(int argc, char** argv)
 {
 	GError *error =  nullptr;
-	arguments_t arguments;
+	Arguments arguments;
 	MIDIHandler_Program_Volume handler;
 
 	// Parse the command-line arguments

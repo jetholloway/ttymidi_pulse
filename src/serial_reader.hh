@@ -8,10 +8,10 @@
 
 struct SerialReader
 {
-	const arguments_t arguments;
+	const Arguments arguments;
 	MIDICommandHandler * const midi_command_handler;
 
-	SerialReader( arguments_t args_in, MIDICommandHandler * const handler_in ) :
+	SerialReader( const Arguments & args_in, MIDICommandHandler * const handler_in ) :
 	arguments(args_in), midi_command_handler(handler_in), serial_fd(-1), device_open(false)
 	{ }
 

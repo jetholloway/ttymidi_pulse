@@ -20,12 +20,16 @@
 
 #define MAX_DEV_STR_LEN               32
 
-typedef struct _arguments
+#include <string>
+
+struct Arguments
 {
 	bool silent, verbose, printonly;
-	char serialdevice[MAX_DEV_STR_LEN];
-	unsigned int  baudrate;
-} arguments_t;
+	unsigned int baudrate;
+	std::string serialdevice;
+
+	Arguments();
+};
 
 //   This is a struct which does something with MIDI commands.  You need to
 // instantiate a concrete class which inherits from this, because otherwise
@@ -41,10 +45,10 @@ struct MIDICommandHandler
 	virtual void channel_pressure(__attribute__((unused)) int channel, __attribute__((unused)) int pressure) {}
 	virtual void pitch_bend(__attribute__((unused)) int channel, __attribute__((unused)) int pitch) {}
 
-	void parse_midi_command(unsigned char *buf, const arguments_t arguments );
+	void parse_midi_command(unsigned char *buf, const Arguments arguments );
 };
 
 void exit_cli(int sig);
-arguments_t parse_all_the_arguments(int argc, char** argv);
+Arguments parse_all_the_arguments(int argc, char** argv);
 
 #endif // TTYMIDI_H

@@ -48,7 +48,7 @@ bool SerialReader::open_serial_device( )
 	// O_RDWR:   open for reading and writing.
 	// O_NOCTTY: not as controlling tty because we don't  want to get killed
 	//           if linenoise sends CTRL-C.
-	serial_fd = open(arguments.serialdevice, O_RDWR | O_NOCTTY );
+	serial_fd = open(arguments.serialdevice.c_str(), O_RDWR | O_NOCTTY );
 
 	// save current serial port settings
 	tcgetattr( this->serial_fd, &this->oldtio );
