@@ -126,13 +126,16 @@ int main(int argc, char** argv)
 	while (program_running)
 		sleep(1);
 
-	cout << "exitted loop in main()" << endl;
+	if ( !arguments.silent )
+		cout << "exitted loop in main()" << endl;
 
 	//------------------------------------------------------
 	// restore the old port settings
-	cout << "Restoring old terminal attributes, and closing device" << endl;
+	if ( !arguments.silent )
+		cout << "Restoring old terminal attributes, and closing device" << endl;
 	serial_reader.close_serial_device();
-	cout << endl << "done!" << endl;
+	if ( !arguments.silent )
+		cout << endl << "done!" << endl;
 
 	// Clean up DBus things
 	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );
