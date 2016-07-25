@@ -215,6 +215,7 @@ void SerialReader::main_loop_printonly( )
 // re-opening of the serial device if it gets closed for whatever reason.
 void SerialReader::main_loop_normal( )
 {
+	unsigned char c;
 	unsigned char buf[3];
 	char msg[MAX_MSG_SIZE];
 	size_t msglen;
@@ -224,86 +225,45 @@ void SerialReader::main_loop_normal( )
 	// just keep running in a loop
 	while (run)
 	{
-		// Keep trying to open the device until it opens
-		while (run)
-		{
-			if ( !this->arguments.silent )
-			{
-				cerr << "Attempting to open device... ";
-				if ( this->open_serial_device() )
-					cerr << "OK." << endl;
-				else
-					cerr << "Failed." << endl;
-			}
-			else
-				this->open_serial_device();
-
-			if ( this->device_open )
-				break;
-
-			//   Don't try to re-open device until some time passes (so we don't eat
-			// all of the CPU).
-			sleep(SERIAL_DEVICE_REOPEN_SECONDS);
-		}
-
-		// Lets first fast forward to first status byte...
-		//   This must be done every time the device is opened, so it makes
-		// sense to put this here.
-		do
-		{
-			if ( !attempt_serial_read(buf, 1) )
-				break;
-		}
-		while ( (buf[0] & 0x80) == 0x00 );
-
-		//   Keep getting MIDI bytes as long as the device is open, and we are
-		// running.
-		while ( run and this->device_open )
+top_of_loop:
+		// Get MIDI bytes as long as the device is open
+		if ( this->device_open )
 		{
 			// So let's align to the beginning of a MIDI command.
 			int i = 1;
 
 			while ( i < 3 )
 			{
-				if ( !attempt_serial_read(buf+i, 1) )
+				if ( !attempt_serial_read(&c, 1) )
+					goto top_of_loop;
+
+				// Status byte has MSb set, and will always be the first byte
+				if ( (c & 0x80) == 0x80 )
+					i = 0;
+
+				buf[i] = c;
+
+				//   Two MIDI commands ('program change' or 'mono key pressure')
+				// only require 2 bytes, not 3.  So let's figure out are we done
+				// or should we read one more byte.
+				if ( i == 1 and ((buf[0] & 0xF0) == 0xC0 or (buf[0] & 0xF0) == 0xD0 ) )
 					break;
 
-				if ( (buf[i] & 0x80) == 0x80 )
-				{
-					// Status byte received and will always be first byte!
-					buf[0] = buf[i];
-					i = 1;
-				}
-				else
-				{
-					// Data byte received
-					if ( i == 2 )
-						// It was 2nd data byte so we have a MIDI event process!
-						i = 3;
-					else
-					{
-						//   Lets figure out are we done or should we read one
-						// more byte.
-						if ( (buf[0] & 0xF0) == 0xC0 or (buf[0] & 0xF0) == 0xD0 )
-							i = 3;
-						else
-							i = 2;
-					}
-				}
+				i++;
 			}
 
 			// Print comment message (the ones that start with 0xFF 0x00 0x00)
 			if ( buf[0] == 0xFF and buf[1] == 0x00 and buf[2] == 0x00 )
 			{
 				if ( !attempt_serial_read(buf, 1) )
-					break;
+					goto top_of_loop;
 
 				msglen = buf[0];
 				if ( msglen > MAX_MSG_SIZE - 1 )
 					msglen = MAX_MSG_SIZE - 1;
 
 				if ( !attempt_serial_read(msg, msglen) )
-					break;
+					goto top_of_loop;
 
 				// Make sure the string ends with a null character
 				msg[msglen] = 0;
@@ -315,6 +275,38 @@ void SerialReader::main_loop_normal( )
 			// We have received a full MIDI message
 				midi_command_handler->parse_midi_command(buf, arguments);
 		}
+		else
+		// Device is not open
+		{
+			if ( !this->arguments.silent )
+				cerr << "Attempting to open device... ";
+
+			if ( this->open_serial_device() )
+			// We just successfully opened the device
+			{
+				if ( !this->arguments.silent )
+					cerr << "OK." << endl;
+
+				// Fast-forward to first status byte...
+				//   This must be done every time the device is opened, so it makes
+				// sense to put this here.
+				do
+				{
+					if ( !attempt_serial_read(buf, 1) )
+						goto top_of_loop;
+				} while ( run and (buf[0] & 0x80) == 0x00 );
+			}
+			else
+			{
+				if ( !this->arguments.silent )
+					cerr << "Failed." << endl;
+
+				//   Don't try to re-open device until some time passes (so we don't eat
+				// all of the CPU).
+				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
+			}
+		}
+
 	}
 
 	if (!arguments.silent)
