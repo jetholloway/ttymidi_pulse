@@ -14,9 +14,9 @@ using namespace std;
 bool program_running;
 GDBusConnection *pulse_conn;
 
-void set_mpd_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
+void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
 
-void set_mpd_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
+void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
 {
 	vector<string> clients, mpd_stream_paths;
 
@@ -85,7 +85,7 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 					y2 = 0;
 				if ( y2 > 65535)
 					y2 = 65535;
-				set_mpd_volume(y2, rule.prop_name, rule.prop_val);
+				set_pulse_client_volume(y2, rule.prop_name, rule.prop_val);
 			}
 		}
 	}
