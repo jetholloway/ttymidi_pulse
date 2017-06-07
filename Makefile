@@ -3,7 +3,7 @@
 # Change these:
 FINAL_BIN := ttymidi_pulse
 
-WARNING_FLAGS := -Wall -Wcast-align -Wconversion -Wextra -Wfloat-equal -Winit-self -Winline -Wmissing-declarations -Wmissing-include-dirs -Wno-long-long -Wpointer-arith -Wredundant-decls -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wuninitialized -Wunreachable-code -Wwrite-strings
+WARNING_FLAGS := -Wall -Wcast-align -Wconversion -Wextra -Wfloat-equal -Winit-self -Wmissing-declarations -Wmissing-include-dirs -Wno-long-long -Wpointer-arith -Wredundant-decls -Wshadow -Wswitch-default -Wswitch-enum -Wundef -Wuninitialized -Wunreachable-code -Wwrite-strings
 
 OPTIMIZATION_FLAGS := -march=corei7 -fexpensive-optimizations -Os
 
