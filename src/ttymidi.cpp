@@ -181,6 +181,20 @@ void MIDICommandHandler::parse_midi_command(unsigned char *buf, const Arguments 
 	param1    = buf[1];
 	param2    = buf[2];
 
+	if (arguments.verbose)
+	{
+		/// FIXME: GCC doesn't implement "std::put_time()" until version 5
+		time_t rawtime;
+		struct tm * timeinfo;
+		char buffer[80];
+
+		time(&rawtime);
+		timeinfo = localtime(&rawtime);
+		strftime(buffer, 80, "[%d-%m-%Y %H:%M:%S] ", timeinfo);
+
+		cout << buffer;
+	}
+
 	switch (operation)
 	{
 		case 0x80:
