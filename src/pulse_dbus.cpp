@@ -148,6 +148,7 @@ void set_things_gv( GDBusConnection *conn, const char *get_method_name, const ch
 		NULL,                              // Cancellable
 		&error
 	);
+	print_errors(error);
 
 	// Clean up
 	g_variant_unref(temp_tva);
