@@ -5,7 +5,7 @@
 #include <map>
 #include <gio/gio.h>		// for g_dbus_*
 
-void print_errors( GError *e );
+void throw_glib_errors( GError *e );
 
 GDBusConnection* get_pulseaudio_bus();
 

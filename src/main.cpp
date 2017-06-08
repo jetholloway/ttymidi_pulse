@@ -151,7 +151,7 @@ int main(int argc, char** argv)
 	// Clean up DBus things
 	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );
 	g_object_unref(pulse_conn);
-	print_errors(error);
+	throw_glib_errors(error);
 
 	return 0;
 }

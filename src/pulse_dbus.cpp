@@ -27,7 +27,7 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 );
 //==============================================================================
 
 // Prints any Glib errors
-void print_errors( GError *e )
+void throw_glib_errors( GError *e )
 {
 	if ( e != NULL )
 		throw e;
@@ -50,7 +50,7 @@ GDBusConnection* get_pulseaudio_bus()
 	{
 		// Otherwise, try using DBus
 		GDBusConnection *connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
-		print_errors(error);
+		throw_glib_errors(error);
 
 		GDBusProxy *proxy = g_dbus_proxy_new_sync( connection,
 		                                           G_DBUS_PROXY_FLAGS_NONE,
@@ -60,7 +60,7 @@ GDBusConnection* get_pulseaudio_bus()
 		                                           "org.PulseAudio1.ServerLookup1",   // interface
 		                                           NULL,
 		                                           &error );
-		print_errors(error);
+		throw_glib_errors(error);
 
 		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
 
@@ -72,7 +72,7 @@ GDBusConnection* get_pulseaudio_bus()
 		}
 
 		g_dbus_connection_close_sync(connection, NULL, &error );
-		print_errors(error);
+		throw_glib_errors(error);
 
 		g_object_unref(proxy);
 		g_object_unref(connection);
@@ -92,7 +92,7 @@ GDBusConnection* get_pulseaudio_bus()
 	                                                 NULL,  // GDBusAuthObserver
 	                                                 NULL,  // GCancellable
 	                                                 &error );
-	print_errors(error);
+	throw_glib_errors(error);
 
 	return answer;
 }
@@ -118,7 +118,7 @@ GVariant* get_things_gv( GDBusConnection *conn, const char *get_method_name, con
 		NULL,                              // Cancellable
 		&error
 	);
-	print_errors(error);
+	throw_glib_errors(error);
 
 	// extract the array out of the tuple of variant
 	temp_va = g_variant_get_child_value(temp_tva,0);
@@ -149,7 +149,7 @@ void set_things_gv( GDBusConnection *conn, const char *get_method_name, const ch
 		NULL,                              // Cancellable
 		&error
 	);
-	print_errors(error);
+	throw_glib_errors(error);
 
 	// Clean up
 	g_variant_unref(temp_tva);
