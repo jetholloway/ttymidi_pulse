@@ -14,6 +14,14 @@ using namespace std;
 bool program_running;
 GDBusConnection *pulse_conn;
 
+// Function to quit program upon receiving a SIGINT or SIGTERM
+void exit_cli(int sig);
+void exit_cli(__attribute__((unused)) int sig)
+{
+	program_running = false;
+	cout << "ttymidi closing down ... " << endl;
+}
+
 void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
 
 void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )

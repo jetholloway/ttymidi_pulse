@@ -44,12 +44,6 @@ static struct argp_option options[] =
 	{ 0             , 0  , 0     , 0, 0,                                                 0 }
 };
 
-void exit_cli(__attribute__((unused)) int sig)
-{
-	program_running = false;
-	cout << "ttymidi closing down ... " << endl;
-}
-
 static error_t parse_opt(int key, char *arg, struct argp_state *state)
 {
 	//   Get the input argument from argp_parse, which we know is a pointer to

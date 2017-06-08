@@ -46,7 +46,6 @@ struct MIDICommandHandler
 	void parse_midi_command(unsigned char *buf, const Arguments & arguments );
 };
 
-void exit_cli(int sig);
 Arguments parse_all_the_arguments(int argc, char** argv);
 
 #endif // MIDI_COMMAND_HANDLER_H
