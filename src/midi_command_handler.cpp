@@ -15,7 +15,7 @@
 	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "ttymidi.hh"
+#include "midi_command_handler.hh"
 
 #include <stdlib.h>
 #include <string.h>

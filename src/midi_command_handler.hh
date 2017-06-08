@@ -15,8 +15,8 @@
 	along with ttymidi.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef TTYMIDI_H
-#define TTYMIDI_H
+#ifndef MIDI_COMMAND_HANDLER_H
+#define MIDI_COMMAND_HANDLER_H
 
 #define MAX_DEV_STR_LEN               32
 
@@ -51,4 +51,4 @@ struct MIDICommandHandler
 void exit_cli(int sig);
 Arguments parse_all_the_arguments(int argc, char** argv);
 
-#endif // TTYMIDI_H
+#endif // MIDI_COMMAND_HANDLER_H

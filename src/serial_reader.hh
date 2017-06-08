@@ -1,7 +1,7 @@
 #ifndef SERIAL_READER_HH
 #define SERIAL_READER_HH
 
-#include "ttymidi.hh"
+#include "midi_command_handler.hh"
 
 #include <cstdlib>
 #include <termios.h>
