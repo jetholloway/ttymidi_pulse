@@ -172,19 +172,14 @@ bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 		return true;
 }
 
-//   This is the main loop of the program (when the 'printonly' option is
-// selected).  It waits for bytes from the serial device, and prints them.  It
-// also handles the re-opening of the serial device if it gets closed for
-// whatever reason.
-void SerialMIDIReader::main_loop_printonly( )
+//   This does an iteration of the main loop of the program (when the
+// 'printonly' option is selected).  It waits for bytes from the serial device,
+// and prints them.  It also handles the re-opening of the serial device if it
+// gets closed for whatever reason.
+void SerialMIDIReader::main_loop_iteration_printonly( )
 {
 	unsigned char c;
 
-	//   Note: program_running can be set to 0 by the function exit_cli().  This
-	// happens when the program gets a SIGINT or SIGTERM signal.  Until that
-	// happens, just keep running in a loop.
-	while (program_running)
-	{
 		//   Super-debug mode: only print to screen whatever comes through
 		// the serial port.
 		if ( attempt_serial_read(&c, 1) )
@@ -204,28 +199,17 @@ void SerialMIDIReader::main_loop_printonly( )
 				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 			}
 		}
-	}
-
-	cout << "Exited loop in main_loop_printonly()" << endl;
 }
 
-//   This is the main loop of the program (when the 'printonly' option is not
-// selected).  It waits for bytes from the serial device, and gives them to
-// MIDICommandHandler::parse_midi_command() to decode.  It also handles the
-// re-opening of the serial device if it gets closed for whatever reason.
-void SerialMIDIReader::main_loop_normal( )
+//   This does an iteration of the main loop of the program (when the
+// 'printonly' option is not selected).  It waits for bytes from the serial
+// device, and gives them to MIDICommandHandler::parse_midi_command() to decode.
+// It also handles the re-opening of the serial device if it gets closed for
+// whatever reason.
+void SerialMIDIReader::main_loop_iteration_normal( )
 {
-	unsigned char c;
-	unsigned char buf[3];
-	char msg[MAX_MSG_SIZE];
-	size_t msglen;
+	static unsigned char buf[3];
 
-	//   Note: program_running can be set to 0 by the function exit_cli().  This
-	// happens when the program gets a SIGINT or SIGTERM signal.  Until that
-	// happens, just keep running in a loop.
-	while (program_running)
-	{
-top_of_loop:
 		// Get MIDI bytes as long as the device is open
 		if ( this->device_open )
 		{
@@ -234,8 +218,10 @@ top_of_loop:
 
 			while ( i < 3 )
 			{
+				unsigned char c;
+
 				if ( !attempt_serial_read(&c, 1) )
-					goto top_of_loop;
+					return;
 
 				// Status byte has MSb set, and will always be the first byte
 				if ( (c & 0x80) == 0x80 )
@@ -256,14 +242,17 @@ top_of_loop:
 			if ( buf[0] == 0xFF and buf[1] == 0x00 and buf[2] == 0x00 )
 			{
 				if ( !attempt_serial_read(buf, 1) )
-					goto top_of_loop;
+					return;
+
+				size_t msglen;
+				char msg[MAX_MSG_SIZE];
 
 				msglen = buf[0];
 				if ( msglen > MAX_MSG_SIZE - 1 )
 					msglen = MAX_MSG_SIZE - 1;
 
 				if ( !attempt_serial_read(msg, msglen) )
-					goto top_of_loop;
+					return;
 
 				// Make sure the string ends with a null character
 				msg[msglen] = 0;
@@ -293,7 +282,7 @@ top_of_loop:
 				do
 				{
 					if ( !attempt_serial_read(buf, 1) )
-						goto top_of_loop;
+						return;
 				} while ( program_running and (buf[0] & 0x80) == 0x00 );
 			}
 			else
@@ -306,17 +295,12 @@ top_of_loop:
 				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 			}
 		}
-
-	}
-
-	if (!arguments.silent)
-		cout << "Exited loop in read_midi_from_serial_port()" << endl;
 }
 
-void SerialMIDIReader::main_loop( )
+void SerialMIDIReader::main_loop_iteration( )
 {
 	if ( arguments.printonly )
-		main_loop_printonly();
+		main_loop_iteration_printonly();
 	else
-		main_loop_normal();
+		main_loop_iteration_normal();
 }

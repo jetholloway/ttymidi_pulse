@@ -110,6 +110,21 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 	}
 };
 
+void main_loop(SerialMIDIReader &serial_reader);
+void main_loop(SerialMIDIReader &serial_reader)
+{
+	//   Note: program_running can be set to 0 by the function exit_cli().  This
+	// happens when the program gets a SIGINT or SIGTERM signal.  Until that
+	// happens, just keep running in a loop.
+	while (program_running)
+	{
+		serial_reader.main_loop_iteration();
+	}
+
+	if (!serial_reader.arguments.silent)
+		cout << "Exited loop in main_loop()" << endl;
+}
+
 int main(int argc, char** argv)
 {
 	GError *error =  nullptr;
@@ -134,7 +149,7 @@ int main(int argc, char** argv)
 	//   Thread for polling serial data.  As serial is currently read in
 	// blocking mode, by this we can enable ctrl+C quitting and avoid zombie
 	// alsa ports when killing app with ctrl+Z
-	thread thr(&SerialMIDIReader::main_loop, serial_reader);
+	thread thr(&main_loop, ref(serial_reader));
 	thr.detach();
 
 	signal(SIGINT, exit_cli);

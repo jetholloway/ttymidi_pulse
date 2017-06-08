@@ -18,15 +18,15 @@ struct SerialMIDIReader
 	bool open_serial_device( );
 	void close_serial_device();
 	bool attempt_serial_read( void *buf, size_t count );
-	void main_loop( );
+	void main_loop_iteration( );
 
 private:
 	int serial_fd;
 	struct termios oldtio;
 	bool device_open;
 
-	void main_loop_printonly( );
-	void main_loop_normal( );
+	void main_loop_iteration_printonly( );
+	void main_loop_iteration_normal( );
 };
 
 #endif // SERIAL_READER_HH
