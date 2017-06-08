@@ -18,8 +18,6 @@
 #ifndef MIDI_COMMAND_HANDLER_H
 #define MIDI_COMMAND_HANDLER_H
 
-#define MAX_DEV_STR_LEN               32
-
 #include <string>
 
 struct Arguments
