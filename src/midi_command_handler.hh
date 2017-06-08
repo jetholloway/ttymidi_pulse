@@ -18,16 +18,7 @@
 #ifndef MIDI_COMMAND_HANDLER_H
 #define MIDI_COMMAND_HANDLER_H
 
-#include <string>
-
-struct Arguments
-{
-	bool silent, verbose, printonly;
-	unsigned int baudrate;
-	std::string serialdevice;
-
-	Arguments();
-};
+#include "arguments.hh"
 
 //   This is a struct which does something with MIDI commands.  You need to
 // instantiate a concrete class which inherits from this, because otherwise
@@ -45,7 +36,5 @@ struct MIDICommandHandler
 
 	void parse_midi_command(unsigned char *buf, const Arguments & arguments );
 };
-
-Arguments parse_all_the_arguments(int argc, char** argv);
 
 #endif // MIDI_COMMAND_HANDLER_H
