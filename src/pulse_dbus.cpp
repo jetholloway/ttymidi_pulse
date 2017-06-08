@@ -63,12 +63,17 @@ GDBusConnection* get_pulseaudio_bus()
 		print_errors(error);
 
 		GVariant* gvp = g_dbus_proxy_get_cached_property( proxy, "Address" );
-		pulse_server_string = g_variant_get_string(gvp, NULL);
+
+		if ( gvp != NULL )
+		{
+			pulse_server_string = g_variant_get_string(gvp, NULL);
+
+			g_variant_unref(gvp);
+		}
 
 		g_dbus_connection_close_sync(connection, NULL, &error );
 		print_errors(error);
 
-		g_variant_unref(gvp);
 		g_object_unref(proxy);
 		g_object_unref(connection);
 	}
