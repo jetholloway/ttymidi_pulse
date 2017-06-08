@@ -27,16 +27,12 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 );
 //==============================================================================
 
 // Prints any Glib errors
-bool print_errors( GError *e )
+void print_errors( GError *e )
 {
 	if ( e != NULL )
-	{
-		cerr << "Error: " << e->message << endl;
-		g_error_free(e);
-		return 1;
-	}
+		throw e;
 	else
-		return 0;
+		return;
 }
 
 // Connects to PulseAudio via DBus

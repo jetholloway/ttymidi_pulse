@@ -85,7 +85,18 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 					y2 = 0;
 				if ( y2 > 65535)
 					y2 = 65535;
-				set_pulse_client_volume(y2, rule.prop_name, rule.prop_val);
+				try
+				{
+					set_pulse_client_volume(y2, rule.prop_name, rule.prop_val);
+				}
+				catch ( GError * e )
+				{
+					cout << "Main loop caught Glib error: " << endl;
+					cout << e->message << endl;
+
+					// Don't forget to free the error
+					g_error_free(e);
+				}
 			}
 		}
 	}
