@@ -180,25 +180,25 @@ void SerialMIDIReader::main_loop_iteration_printonly( )
 {
 	unsigned char c;
 
-		//   Super-debug mode: only print to screen whatever comes through
-		// the serial port.
-		if ( attempt_serial_read(&c, 1) )
-			cout << hex << (int)c << "\t" << flush;
+	//   Super-debug mode: only print to screen whatever comes through
+	// the serial port.
+	if ( attempt_serial_read(&c, 1) )
+		cout << hex << (int)c << "\t" << flush;
+	else
+	// Read failed
+	{
+		cerr << "Attempting to open device... ";
+		if ( this->open_serial_device() )
+			cerr << "OK." << endl;
 		else
-		// Read failed
 		{
-			cerr << "Attempting to open device... ";
-			if ( this->open_serial_device() )
-				cerr << "OK." << endl;
-			else
-			{
-				cerr << "Failed." << endl;
+			cerr << "Failed." << endl;
 
-				//   Don't try to re-open device until some time passes (so we don't eat
-				// all of the CPU).
-				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
-			}
+			//   Don't try to re-open device until some time passes (so we don't eat
+			// all of the CPU).
+			sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 		}
+	}
 }
 
 //   This does an iteration of the main loop of the program (when the
@@ -210,91 +210,91 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 {
 	static unsigned char buf[3];
 
-		// Get MIDI bytes as long as the device is open
-		if ( this->device_open )
+	// Get MIDI bytes as long as the device is open
+	if ( this->device_open )
+	{
+		// So let's align to the beginning of a MIDI command.
+		int i = 1;
+
+		while ( i < 3 )
 		{
-			// So let's align to the beginning of a MIDI command.
-			int i = 1;
+			unsigned char c;
 
-			while ( i < 3 )
-			{
-				unsigned char c;
+			if ( !attempt_serial_read(&c, 1) )
+				return;
 
-				if ( !attempt_serial_read(&c, 1) )
-					return;
+			// Status byte has MSb set, and will always be the first byte
+			if ( (c & 0x80) == 0x80 )
+				i = 0;
 
-				// Status byte has MSb set, and will always be the first byte
-				if ( (c & 0x80) == 0x80 )
-					i = 0;
+			buf[i] = c;
 
-				buf[i] = c;
+			//   Two MIDI commands ('program change' or 'mono key pressure')
+			// only require 2 bytes, not 3.  So let's figure out are we done
+			// or should we read one more byte.
+			if ( i == 1 and ((buf[0] & 0xF0) == 0xC0 or (buf[0] & 0xF0) == 0xD0 ) )
+				break;
 
-				//   Two MIDI commands ('program change' or 'mono key pressure')
-				// only require 2 bytes, not 3.  So let's figure out are we done
-				// or should we read one more byte.
-				if ( i == 1 and ((buf[0] & 0xF0) == 0xC0 or (buf[0] & 0xF0) == 0xD0 ) )
-					break;
+			i++;
+		}
 
-				i++;
-			}
+		// Print comment message (the ones that start with 0xFF 0x00 0x00)
+		if ( buf[0] == 0xFF and buf[1] == 0x00 and buf[2] == 0x00 )
+		{
+			if ( !attempt_serial_read(buf, 1) )
+				return;
 
-			// Print comment message (the ones that start with 0xFF 0x00 0x00)
-			if ( buf[0] == 0xFF and buf[1] == 0x00 and buf[2] == 0x00 )
+			size_t msglen;
+			char msg[MAX_MSG_SIZE];
+
+			msglen = buf[0];
+			if ( msglen > MAX_MSG_SIZE - 1 )
+				msglen = MAX_MSG_SIZE - 1;
+
+			if ( !attempt_serial_read(msg, msglen) )
+				return;
+
+			// Make sure the string ends with a null character
+			msg[msglen] = 0;
+
+			if ( !arguments.silent )
+				cout << "0xFF Non-MIDI message: " << msg << endl;
+		}
+		else
+		// We have received a full MIDI message
+			midi_command_handler->parse_midi_command(buf, arguments);
+	}
+	else
+	// Device is not open
+	{
+		if ( !this->arguments.silent )
+			cerr << "Attempting to open device... ";
+
+		if ( this->open_serial_device() )
+		// We just successfully opened the device
+		{
+			if ( !this->arguments.silent )
+				cerr << "OK." << endl;
+
+			// Fast-forward to first status byte...
+			//   This must be done every time the device is opened, so it makes
+			// sense to put this here.
+			do
 			{
 				if ( !attempt_serial_read(buf, 1) )
 					return;
-
-				size_t msglen;
-				char msg[MAX_MSG_SIZE];
-
-				msglen = buf[0];
-				if ( msglen > MAX_MSG_SIZE - 1 )
-					msglen = MAX_MSG_SIZE - 1;
-
-				if ( !attempt_serial_read(msg, msglen) )
-					return;
-
-				// Make sure the string ends with a null character
-				msg[msglen] = 0;
-
-				if ( !arguments.silent )
-					cout << "0xFF Non-MIDI message: " << msg << endl;
-			}
-			else
-			// We have received a full MIDI message
-				midi_command_handler->parse_midi_command(buf, arguments);
+			} while ( program_running and (buf[0] & 0x80) == 0x00 );
 		}
 		else
-		// Device is not open
 		{
 			if ( !this->arguments.silent )
-				cerr << "Attempting to open device... ";
+				cerr << "Failed." << endl;
 
-			if ( this->open_serial_device() )
-			// We just successfully opened the device
-			{
-				if ( !this->arguments.silent )
-					cerr << "OK." << endl;
-
-				// Fast-forward to first status byte...
-				//   This must be done every time the device is opened, so it makes
-				// sense to put this here.
-				do
-				{
-					if ( !attempt_serial_read(buf, 1) )
-						return;
-				} while ( program_running and (buf[0] & 0x80) == 0x00 );
-			}
-			else
-			{
-				if ( !this->arguments.silent )
-					cerr << "Failed." << endl;
-
-				//   Don't try to re-open device until some time passes (so we don't eat
-				// all of the CPU).
-				sleep(SERIAL_DEVICE_REOPEN_SECONDS);
-			}
+			//   Don't try to re-open device until some time passes (so we don't eat
+			// all of the CPU).
+			sleep(SERIAL_DEVICE_REOPEN_SECONDS);
 		}
+	}
 }
 
 void SerialMIDIReader::main_loop_iteration( )
