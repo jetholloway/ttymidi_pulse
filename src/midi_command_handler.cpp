@@ -17,10 +17,6 @@
 
 #include "midi_command_handler.hh"
 
-#include <stdlib.h>
-#include <string.h>
-#include <termios.h>
-#include <argp.h>
 #include <iostream>
 
 using namespace std;

@@ -1,7 +1,5 @@
 #include "arguments.hh"
 
-#include <stdlib.h>
-#include <string.h>
 #include <termios.h>
 #include <argp.h>
 #include <iostream>

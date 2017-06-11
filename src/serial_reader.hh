@@ -3,7 +3,6 @@
 
 #include "midi_command_handler.hh"
 
-#include <cstdlib>
 #include <termios.h>
 
 struct SerialMIDIReader

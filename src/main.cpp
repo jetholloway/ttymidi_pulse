@@ -1,9 +1,6 @@
 #include "pulse_dbus.hh"
 #include "serial_reader.hh"
 
-#include <signal.h>
-#include <unistd.h>   // For read, sleep
-
 #include <iostream>
 #include <thread>
 #include <cmath>
