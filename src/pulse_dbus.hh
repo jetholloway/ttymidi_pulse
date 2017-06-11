@@ -11,6 +11,13 @@ struct DBusPulseAudio
 {
 	void connect();
 
+	void set_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
+
+	void disconnect();
+
+private:
+	GDBusConnection *pulse_conn;
+
 	std::vector<std::string> get_clients( );
 
 	std::vector<std::string> get_sinks( );
@@ -27,11 +34,6 @@ struct DBusPulseAudio
 	std::map<std::string,std::string> get_property_list(
 		const char *interface,
 		const char *path );
-
-	void disconnect();
-
-private:
-	GDBusConnection *pulse_conn;
 };
 
 #endif  // PULSE_DBUS_HH

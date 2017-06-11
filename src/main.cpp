@@ -9,7 +9,6 @@ using namespace std;
 
 // This is a global variable so you know when the threads have to stop running
 bool program_running;
-DBusPulseAudio dbus_pulse;
 
 // Function to quit program upon receiving a SIGINT or SIGTERM
 void exit_cli(int sig);
@@ -17,41 +16,6 @@ void exit_cli(__attribute__((unused)) int sig)
 {
 	program_running = false;
 	cout << "ttymidi closing down ... " << endl;
-}
-
-void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
-
-void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
-{
-	vector<string> clients, mpd_stream_paths;
-
-	// Get the pulse clients
-	clients = dbus_pulse.get_clients();
-
-	// Go through each client
-	for ( const string & c : clients )
-	{
-		map<string,string> properties = dbus_pulse.get_property_list("org.PulseAudio.Core1.Client", c.c_str() );
-
-		if ( properties.find(prop_name) != properties.end() and properties[prop_name] == (string)prop_val )
-			for ( const string & path : dbus_pulse.get_playback_streams( c.c_str() ) )
-				mpd_stream_paths.push_back(path);
-	}
-
-	// Go through each stream and set the volume
-	for ( const string & stream_path : mpd_stream_paths )
-	{
-		// Note that the maximum volume is supposedly 65535
-		vector<uint32_t> old_vols, new_vols;
-
-		old_vols = dbus_pulse.get_volume( stream_path.c_str() );
-
-		new_vols = old_vols;
-		for ( uint32_t & v : new_vols )
-			v = vol_in;
-
-		dbus_pulse.set_volume( stream_path.c_str(), new_vols );
-	}
 }
 
 struct Fader_Program_Mapping
@@ -65,6 +29,7 @@ struct Fader_Program_Mapping
 // piece of code which connects the 'ttymidi' side with the 'Pulse DBus' side.
 struct MIDIHandler_Program_Volume : MIDICommandHandler
 {
+	DBusPulseAudio & dbus_pulse;
 	const size_t nr_rules = 3;
 	const Fader_Program_Mapping rules[3] =
 	{
@@ -73,6 +38,10 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 		{1, "application.process.binary", "mplayer2"},
 		{2, "application.name", "CubebUtils"},
 	};
+
+	MIDIHandler_Program_Volume( DBusPulseAudio & dbus_pulse_in ) :
+	dbus_pulse(dbus_pulse_in)
+	{}
 
 	virtual void pitch_bend(int channel, int pitch)
 	{
@@ -92,7 +61,7 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 					y2 = 65535;
 				try
 				{
-					set_pulse_client_volume(y2, rule.prop_name, rule.prop_val);
+					dbus_pulse.set_client_volume(y2, rule.prop_name, rule.prop_val);
 				}
 				catch ( GError * e )
 				{
@@ -129,7 +98,8 @@ void main_loop(SerialMIDIReader &serial_reader)
 int main(int argc, char** argv)
 {
 	Arguments arguments;
-	MIDIHandler_Program_Volume handler;
+	DBusPulseAudio dbus_pulse;
+	MIDIHandler_Program_Volume handler(dbus_pulse);
 
 	// Parse the command-line arguments
 	arguments = parse_all_the_arguments(argc, argv);

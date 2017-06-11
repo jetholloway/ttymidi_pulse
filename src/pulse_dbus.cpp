@@ -303,6 +303,39 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 	return answer;
 }
 
+void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
+{
+	vector<string> clients, mpd_stream_paths;
+
+	// Get the pulse clients
+	clients = this->get_clients();
+
+	// Go through each client
+	for ( const string & c : clients )
+	{
+		map<string,string> properties = this->get_property_list("org.PulseAudio.Core1.Client", c.c_str() );
+
+		if ( properties.find(prop_name) != properties.end() and properties[prop_name] == (string)prop_val )
+			for ( const string & path : this->get_playback_streams( c.c_str() ) )
+				mpd_stream_paths.push_back(path);
+	}
+
+	// Go through each stream and set the volume
+	for ( const string & stream_path : mpd_stream_paths )
+	{
+		// Note that the maximum volume is supposedly 65535
+		vector<uint32_t> old_vols, new_vols;
+
+		old_vols = this->get_volume( stream_path.c_str() );
+
+		new_vols = old_vols;
+		for ( uint32_t & v : new_vols )
+			v = vol_in;
+
+		this->set_volume( stream_path.c_str(), new_vols );
+	}
+}
+
 void DBusPulseAudio::disconnect()
 {
 	GError *error = nullptr;
