@@ -31,11 +31,7 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 );
 void throw_glib_errors( GError *e )
 {
 	if ( e != NULL )
-	{
-		cerr << current_time() << "Glib error has occurred: " << e->message << endl;
-
 		throw e;
-	}
 	else
 		return;
 }
@@ -48,7 +44,8 @@ bool DBusPulseAudio::connect()
 
 	if ( this->conn_open == true )
 	{
-		cerr << current_time() << "DBusPulseAudio::connect(): Connection already open" << endl;
+		if ( !arguments.silent )
+			cerr << current_time() << "DBusPulseAudio::connect(): Connection already open" << endl;
 		return true;
 	}
 
@@ -87,11 +84,13 @@ bool DBusPulseAudio::connect()
 
 	if ( pulse_server_string == "" )
 	{
-		cerr << current_time() << "Unable to find PulseAudio bus name" << endl;
+		if (arguments.verbose)
+			cerr << current_time() << "Unable to find PulseAudio bus name" << endl;
 		return false;
 	}
 
-	cerr << current_time() << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
+	if ( !arguments.silent )
+		cerr << current_time() << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
 	this->pulse_conn = g_dbus_connection_new_for_address_sync(
@@ -278,7 +277,8 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 
 		if ( g_variant_n_children(property) != 2 )
 		{
-			cerr << current_time() << "Property is a dictionary entry which does not have 2 children" << endl;
+			if ( !arguments.silent )
+				cerr << current_time() << "Property is a dictionary entry which does not have 2 children" << endl;
 			exit(1);
 		}
 
@@ -321,7 +321,8 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 		// Attempt to re-open the connection
 		if ( !this->connect() )
 		{
-			cerr << current_time() << "DBusPulseAudio::set_client_volume(): the connection is closed" << endl;
+			if (arguments.verbose)
+				cerr << current_time() << "DBusPulseAudio::set_client_volume(): the connection is closed" << endl;
 			return;
 		}
 	}
@@ -374,7 +375,8 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 		// "The connection is closed"
 		// This happens when we kill pulseaudio while tty_pulse is running
 		{
-			cerr << current_time() << "Pulseaudio connection has closed" << endl;
+			if ( !arguments.silent )
+				cerr << current_time() << "Pulseaudio connection has closed" << endl;
 			g_error_free(e);
 			this->conn_open = false;
 		}

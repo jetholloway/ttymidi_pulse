@@ -1,6 +1,8 @@
 #ifndef PULSE_DBUS_HH
 #define PULSE_DBUS_HH
 
+#include "arguments.hh"
+
 #include <vector>
 #include <map>
 #include <gio/gio.h>		// for g_dbus_*
@@ -9,6 +11,12 @@ void throw_glib_errors( GError *e );
 
 struct DBusPulseAudio
 {
+	const Arguments arguments;
+
+	DBusPulseAudio( const Arguments & args_in ) :
+	arguments(args_in)
+	{ }
+
 	bool connect();
 
 	void set_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );

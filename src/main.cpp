@@ -16,7 +16,6 @@ void exit_cli(int sig);
 void exit_cli(__attribute__((unused)) int sig)
 {
 	program_running = false;
-	cerr << current_time() << "ttymidi closing down ... " << endl;
 }
 
 struct Fader_Program_Mapping
@@ -84,12 +83,15 @@ void main_loop(SerialMIDIReader &serial_reader)
 
 int main(int argc, char** argv)
 {
-	Arguments arguments;
-	DBusPulseAudio dbus_pulse;
-	MIDIHandler_Program_Volume handler(dbus_pulse);
-
 	// Parse the command-line arguments
+	Arguments arguments;
 	arguments = parse_all_the_arguments(argc, argv);
+
+	// Create object to deal with PulseAudio over DBus
+	DBusPulseAudio dbus_pulse(arguments);
+
+	// Create object to handle MIDI commands
+	MIDIHandler_Program_Volume handler(dbus_pulse);
 
 	// Create an object to handle the serial device
 	SerialMIDIReader serial_reader(arguments, &handler);

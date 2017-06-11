@@ -267,14 +267,11 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 	else
 	// Device is not open
 	{
-		if ( !this->arguments.silent )
-			cerr << current_time() << "Attempting to open device... ";
-
 		if ( this->open_serial_device() )
 		// We just successfully opened the device
 		{
 			if ( !this->arguments.silent )
-				cerr << "OK." << endl;
+				cerr << current_time()  << "Connected to serial device." << endl;
 
 			// Fast-forward to first status byte...
 			//   This must be done every time the device is opened, so it makes
@@ -287,8 +284,8 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 		}
 		else
 		{
-			if ( !this->arguments.silent )
-				cerr << "Failed." << endl;
+			if ( this->arguments.verbose )
+				cerr << current_time()  << "Failed to reconnect to serial device." << endl;
 
 			//   Don't try to re-open device until some time passes (so we don't eat
 			// all of the CPU).
