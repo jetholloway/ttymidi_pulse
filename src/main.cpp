@@ -12,7 +12,7 @@ using namespace std;
 
 // This is a global variable so you know when the threads have to stop running
 bool program_running;
-GDBusConnection *pulse_conn;
+DBusPulseAudio dbus_pulse;
 
 // Function to quit program upon receiving a SIGINT or SIGTERM
 void exit_cli(int sig);
@@ -29,15 +29,15 @@ void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const 
 	vector<string> clients, mpd_stream_paths;
 
 	// Get the pulse clients
-	clients = get_clients(pulse_conn);
+	clients = dbus_pulse.get_clients();
 
 	// Go through each client
 	for ( const string & c : clients )
 	{
-		map<string,string> properties = get_property_list(pulse_conn, "org.PulseAudio.Core1.Client", c.c_str() );
+		map<string,string> properties = dbus_pulse.get_property_list("org.PulseAudio.Core1.Client", c.c_str() );
 
 		if ( properties.find(prop_name) != properties.end() and properties[prop_name] == (string)prop_val )
-			for ( const string & path : get_playback_streams( pulse_conn, c.c_str() ) )
+			for ( const string & path : dbus_pulse.get_playback_streams( c.c_str() ) )
 				mpd_stream_paths.push_back(path);
 	}
 
@@ -47,13 +47,13 @@ void set_pulse_client_volume( unsigned int vol_in, const char *prop_name, const 
 		// Note that the maximum volume is supposedly 65535
 		vector<uint32_t> old_vols, new_vols;
 
-		old_vols = get_volume(pulse_conn, stream_path.c_str() );
+		old_vols = dbus_pulse.get_volume( stream_path.c_str() );
 
 		new_vols = old_vols;
 		for ( uint32_t & v : new_vols )
 			v = vol_in;
 
-		set_volume( pulse_conn, stream_path.c_str(), new_vols );
+		dbus_pulse.set_volume( stream_path.c_str(), new_vols );
 	}
 }
 
@@ -131,7 +131,6 @@ void main_loop(SerialMIDIReader &serial_reader)
 
 int main(int argc, char** argv)
 {
-	GError *error =  nullptr;
 	Arguments arguments;
 	MIDIHandler_Program_Volume handler;
 
@@ -145,7 +144,7 @@ int main(int argc, char** argv)
 		cout << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
 
 	// Open the DBus connection
-	pulse_conn = get_pulseaudio_bus();
+	dbus_pulse.connect();
 
 	//------------------------------------------------------
 	// Start the thread that polls serial data
@@ -176,9 +175,7 @@ int main(int argc, char** argv)
 		cout << endl << "done!" << endl;
 
 	// Clean up DBus things
-	g_dbus_connection_close_sync(pulse_conn, nullptr, &error );
-	g_object_unref(pulse_conn);
-	throw_glib_errors(error);
+	dbus_pulse.disconnect();
 
 	return 0;
 }

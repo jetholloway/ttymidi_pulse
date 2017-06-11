@@ -7,26 +7,31 @@
 
 void throw_glib_errors( GError *e );
 
-GDBusConnection* get_pulseaudio_bus();
+struct DBusPulseAudio
+{
+	void connect();
 
-std::vector<std::string> get_clients( GDBusConnection *conn );
+	std::vector<std::string> get_clients( );
 
-std::vector<std::string> get_sinks( GDBusConnection *conn );
+	std::vector<std::string> get_sinks( );
 
-std::vector<std::string> get_playback_streams(
-	GDBusConnection *conn,
-	const char * path );
+	std::vector<std::string> get_playback_streams(
+		const char * path );
 
-std::vector<uint32_t> get_volume( GDBusConnection *conn, const char * path );
+	std::vector<uint32_t> get_volume( const char * path );
 
-void set_volume(
-	GDBusConnection *conn,
-	const char * path,
-	const std::vector<uint32_t> & vols );
+	void set_volume(
+		const char * path,
+		const std::vector<uint32_t> & vols );
 
-std::map<std::string,std::string> get_property_list(
-	GDBusConnection* conn,
-	const char *interface,
-	const char *path );
+	std::map<std::string,std::string> get_property_list(
+		const char *interface,
+		const char *path );
+
+	void disconnect();
+
+private:
+	GDBusConnection *pulse_conn;
+};
 
 #endif  // PULSE_DBUS_HH

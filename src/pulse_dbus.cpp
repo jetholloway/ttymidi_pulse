@@ -40,11 +40,10 @@ void throw_glib_errors( GError *e )
 }
 
 // Connects to PulseAudio via DBus
-GDBusConnection* get_pulseaudio_bus()
+void DBusPulseAudio::connect()
 {
 	GError *error = NULL;
 	string pulse_server_string;
-	GDBusConnection *answer;
 
 	// Try environment variable
 	if ( getenv("PULSE_DBUS_SERVER") != NULL )
@@ -91,14 +90,13 @@ GDBusConnection* get_pulseaudio_bus()
 	cout << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
-	answer = g_dbus_connection_new_for_address_sync( pulse_server_string.c_str(),  // Address
-	                                                 G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
-	                                                 NULL,  // GDBusAuthObserver
-	                                                 NULL,  // GCancellable
-	                                                 &error );
+	this->pulse_conn = g_dbus_connection_new_for_address_sync(
+	                       pulse_server_string.c_str(),  // Address
+	                       G_DBUS_CONNECTION_FLAGS_AUTHENTICATION_CLIENT,
+	                       NULL,  // GDBusAuthObserver
+	                       NULL,  // GCancellable
+	                       &error );
 	throw_glib_errors(error);
-
-	return answer;
 }
 
 //   Gets general things from PulseAudio.  This could include: clients, sinks,
@@ -218,49 +216,49 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 )
 }
 
 // Gets all of the clients, and returns their DBus paths
-vector<string> get_clients( GDBusConnection *conn )
+vector<string> DBusPulseAudio::get_clients( )
 {
-	GVariant * gv = get_things_gv( conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	GVariant * gv = get_things_gv( this->pulse_conn, "Clients", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 	return gv_to_vs(gv);
 }
 
 // Gets all of the sinks, and returns their DBus paths
-vector<string> get_sinks( GDBusConnection *conn )
+vector<string> DBusPulseAudio::get_sinks( )
 {
-	GVariant * gv = get_things_gv( conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
+	GVariant * gv = get_things_gv( this->pulse_conn, "Sinks", "org.PulseAudio.Core1", "/org/pulseaudio/core1" );
 	return gv_to_vs(gv);
 }
 
 // Gets all of a clients playback streams, and returns their DBus paths
-vector<string> get_playback_streams( GDBusConnection *conn, const char * path )
+vector<string> DBusPulseAudio::get_playback_streams( const char * path )
 {
-	GVariant * gv = get_things_gv( conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
+	GVariant * gv = get_things_gv( this->pulse_conn, "PlaybackStreams", "org.PulseAudio.Core1.Client", path );
 	return gv_to_vs(gv);
 }
 
 // Gets a stream's volume
-vector<uint32_t> get_volume( GDBusConnection *conn, const char * path )
+vector<uint32_t> DBusPulseAudio::get_volume( const char * path )
 {
-	GVariant * gv = get_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path );
+	GVariant * gv = get_things_gv( this->pulse_conn, "Volume", "org.PulseAudio.Core1.Stream", path );
 	return gv_to_vuint32(gv);
 }
 
 // Sets a stream's volume
-void set_volume( GDBusConnection *conn, const char * path, const vector<uint32_t> & vols )
+void DBusPulseAudio::set_volume( const char * path, const vector<uint32_t> & vols )
 {
 	GVariant * gv = vuint32_to_gv(vols);
-	set_things_gv( conn, "Volume", "org.PulseAudio.Core1.Stream", path, gv );
+	set_things_gv( this->pulse_conn, "Volume", "org.PulseAudio.Core1.Stream", path, gv );
 	// Apparently you don't have to free 'gv', as it is already freed or some shit
 }
 
 // Get's a PulseAudio object's properties
-map<string,string> get_property_list( GDBusConnection* conn, const char *interface, const char *path )
+map<string,string> DBusPulseAudio::get_property_list( const char *interface, const char *path )
 {
 	GVariant *gv_adsab;
 	map<string,string> answer;
 
 	// Make the DBus call to get the data
-	gv_adsab = get_things_gv(conn, "PropertyList", interface, path);
+	gv_adsab = get_things_gv(this->pulse_conn, "PropertyList", interface, path);
 
 	for ( size_t i = 0; i < g_variant_n_children(gv_adsab); i++ )
 	{
@@ -303,4 +301,13 @@ map<string,string> get_property_list( GDBusConnection* conn, const char *interfa
 	g_variant_unref(gv_adsab);
 
 	return answer;
+}
+
+void DBusPulseAudio::disconnect()
+{
+	GError *error = nullptr;
+
+	g_dbus_connection_close_sync(this->pulse_conn, nullptr, &error );
+	g_object_unref(this->pulse_conn);
+	throw_glib_errors(error);
 }
