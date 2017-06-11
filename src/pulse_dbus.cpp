@@ -80,9 +80,6 @@ bool DBusPulseAudio::connect()
 			g_variant_unref(gvp);
 		}
 
-		g_dbus_connection_close_sync(connection, NULL, &error );
-		throw_glib_errors(error);
-
 		g_object_unref(proxy);
 		g_object_unref(connection);
 	}
@@ -312,6 +309,8 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 	return answer;
 }
 
+//   This may fail, if there is no connection to pulseaudio, but it will not
+// crash the prgoram.
 void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val )
 {
 	vector<string> clients, mpd_stream_paths;
@@ -368,6 +367,15 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 			// just the same outcome as if zero instances of the client were
 			// running in the first place.
 			g_error_free(e);
+		}
+		else if ( e->domain == g_io_error_quark() and
+		          e->code == G_IO_ERROR_CLOSED )
+		// "The connection is closed"
+		// This happens when we kill pulseaudio while tty_pulse is running
+		{
+			cerr << "Pulseaudio connection has closed" << endl;
+			g_error_free(e);
+			this->conn_open = false;
 		}
 		else
 			throw e;

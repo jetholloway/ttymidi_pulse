@@ -96,7 +96,7 @@ int main(int argc, char** argv)
 	if (arguments.printonly)
 		cout << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
 
-	// Open the DBus connection
+	// (Attempt to) open the DBus connection
 	dbus_pulse.connect();
 
 	//------------------------------------------------------
