@@ -339,13 +339,17 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 	}
 	catch ( GError * e )
 	{
-		// We only really want to catch these errors:
+		if ( e->domain == g_dbus_error_quark() and
+		     e->code == G_DBUS_ERROR_UNKNOWN_METHOD )
 		// "GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod"
 		// This is the error that occurs when a pulseaudio client
 		// disappears half way through set_pulse_client_volume()
-		if ( e->domain == g_dbus_error_quark() and
-			 e->code == G_DBUS_ERROR_UNKNOWN_METHOD )
+		{
+			//   Silently ignore this, because it's not really an error.  It's
+			// just the same outcome as if zero instances of the client were
+			// running in the first place.
 			g_error_free(e);
+		}
 		else
 			throw e;
 	}
