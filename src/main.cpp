@@ -59,22 +59,8 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 					y2 = 0;
 				if ( y2 > 65535)
 					y2 = 65535;
-				try
-				{
-					dbus_pulse.set_client_volume(y2, rule.prop_name, rule.prop_val);
-				}
-				catch ( GError * e )
-				{
-					// We only really want to catch these errors:
-					// "GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod"
-					// This is the error that occurs when a pulseaudio client
-					// disappears half way through set_pulse_client_volume()
-					if ( e->domain == g_dbus_error_quark() and
-					     e->code == G_DBUS_ERROR_UNKNOWN_METHOD )
-						g_error_free(e);
-					else
-						throw e;
-				}
+
+				dbus_pulse.set_client_volume(y2, rule.prop_name, rule.prop_val);
 			}
 		}
 	}
