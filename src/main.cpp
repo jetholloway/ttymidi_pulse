@@ -120,15 +120,11 @@ int main(int argc, char** argv)
 		sleep(1);
 
 	if ( !arguments.silent )
-		cerr << current_time() << "exitted loop in main()" << endl;
+		cerr << current_time() << "Caught SIGINT/SIGTERM. Exiting." << endl;
 
 	//------------------------------------------------------
 	// restore the old port settings
-	if ( !arguments.silent )
-		cerr << current_time() << "Restoring old terminal attributes, and closing device" << endl;
 	serial_reader.close_serial_device();
-	if ( !arguments.silent )
-		cerr << current_time() << "done!" << endl;
 
 	// Clean up DBus things
 	dbus_pulse.disconnect();

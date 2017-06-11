@@ -45,7 +45,7 @@ bool DBusPulseAudio::connect()
 	if ( this->conn_open == true )
 	{
 		if ( !arguments.silent )
-			cerr << current_time() << "DBusPulseAudio::connect(): Connection already open" << endl;
+			cerr << current_time() << "ERROR: DBusPulseAudio::connect(): Connection already open" << endl;
 		return true;
 	}
 
@@ -277,8 +277,7 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 
 		if ( g_variant_n_children(property) != 2 )
 		{
-			if ( !arguments.silent )
-				cerr << current_time() << "Property is a dictionary entry which does not have 2 children" << endl;
+			cerr << current_time() << "ERROR: Property is a dictionary entry which does not have 2 children" << endl;
 			exit(1);
 		}
 
@@ -381,7 +380,12 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 			this->conn_open = false;
 		}
 		else
+		{
+			cerr << current_time() << "Unhandled GError: " << endl;
+			cerr << "error->domain: " << e->domain << endl;
+			cerr << "error->code: " << e->code << endl;
 			throw e;
+		}
 	}
 }
 

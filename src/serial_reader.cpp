@@ -157,10 +157,10 @@ bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 	{
 		if ( ret_read == 0 )
 		// Unable to read any bytes from the device
-			cerr << current_time() << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
+			cerr << current_time() << "No bytes read from serial device. Will try to re-open." << endl;
 		else if ( ret_read == -1 )
 		// An error occurred
-			cerr << current_time() << "Error reading from serial device.  Will try to re-open the device file." << endl;
+			cerr << current_time() << "Error reading from serial device. Will try to re-open." << endl;
 	}
 
 	if ( ret_read == 0 or ret_read == -1 )
@@ -187,7 +187,7 @@ void SerialMIDIReader::main_loop_iteration_printonly( )
 	else
 	// Read failed
 	{
-		cerr << current_time() << "Attempting to open device... ";
+		cerr << current_time() << "Attempting to open serial device... ";
 		if ( this->open_serial_device() )
 			cerr << "OK." << endl;
 		else
