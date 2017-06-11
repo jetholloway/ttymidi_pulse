@@ -1,4 +1,5 @@
 #include "serial_reader.hh"
+#include "utils.hh"
 
 #include <string.h>
 #include <fcntl.h>
@@ -39,7 +40,7 @@ bool SerialMIDIReader::open_serial_device( )
 	// has made an error.
 	if ( device_open )
 	{
-		cerr << "open_serial_device(): device_open = true (i.e. device already open)" << endl;
+		cerr << current_time() << "open_serial_device(): device_open = true (i.e. device already open)" << endl;
 		exit(1);
 	}
 
@@ -134,10 +135,10 @@ bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 	{
 		if( ret_select == 0 )
 		// A timeout occurred
-			cout << "Timeout reading from serial device" << endl;
+			cout << current_time() << "Timeout reading from serial device" << endl;
 		else if( ret_select == -1 )
 		// An error occurred
-			cerr << "SerialReader::attempt_serial_read(): Error from select()" << endl;
+			cerr << current_time() << "SerialReader::attempt_serial_read(): Error from select()" << endl;
 	}
 
 	if ( ret_select == 0 or ret_select == -1 )
@@ -156,10 +157,10 @@ bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 	{
 		if ( ret_read == 0 )
 		// Unable to read any bytes from the device
-			cerr << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
+			cerr << current_time() << "No bytes could be read from the device file.  Will try to re-open the device file." << endl;
 		else if ( ret_read == -1 )
 		// An error occurred
-			cerr << "Error reading from serial device.  Will try to re-open the device file." << endl;
+			cerr << current_time() << "Error reading from serial device.  Will try to re-open the device file." << endl;
 	}
 
 	if ( ret_read == 0 or ret_read == -1 )
@@ -186,7 +187,7 @@ void SerialMIDIReader::main_loop_iteration_printonly( )
 	else
 	// Read failed
 	{
-		cerr << "Attempting to open device... ";
+		cerr << current_time() << "Attempting to open device... ";
 		if ( this->open_serial_device() )
 			cerr << "OK." << endl;
 		else
@@ -257,7 +258,7 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 			msg[msglen] = 0;
 
 			if ( !arguments.silent )
-				cout << "0xFF Non-MIDI message: " << msg << endl;
+				cout << current_time() << "0xFF Non-MIDI message: " << msg << endl;
 		}
 		else
 		// We have received a full MIDI message
@@ -267,7 +268,7 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 	// Device is not open
 	{
 		if ( !this->arguments.silent )
-			cerr << "Attempting to open device... ";
+			cerr << current_time() << "Attempting to open device... ";
 
 		if ( this->open_serial_device() )
 		// We just successfully opened the device

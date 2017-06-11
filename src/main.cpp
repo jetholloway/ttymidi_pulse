@@ -1,5 +1,6 @@
 #include "pulse_dbus.hh"
 #include "serial_reader.hh"
+#include "utils.hh"
 
 #include <iostream>
 #include <thread>
@@ -15,7 +16,7 @@ void exit_cli(int sig);
 void exit_cli(__attribute__((unused)) int sig)
 {
 	program_running = false;
-	cout << "ttymidi closing down ... " << endl;
+	cout << current_time() << "ttymidi closing down ... " << endl;
 }
 
 struct Fader_Program_Mapping
@@ -78,7 +79,7 @@ void main_loop(SerialMIDIReader &serial_reader)
 	}
 
 	if (!serial_reader.arguments.silent)
-		cout << "Exited loop in main_loop()" << endl;
+		cout << current_time() << "Exited loop in main_loop()" << endl;
 }
 
 int main(int argc, char** argv)
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 	SerialMIDIReader serial_reader(arguments, &handler);
 
 	if (arguments.printonly)
-		cout << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
+		cout << current_time() << "Super debug mode: Only printing the signal to screen. Nothing else." << endl;
 
 	// (Attempt to) open the DBus connection
 	dbus_pulse.connect();
@@ -117,15 +118,15 @@ int main(int argc, char** argv)
 		sleep(1);
 
 	if ( !arguments.silent )
-		cout << "exitted loop in main()" << endl;
+		cout << current_time() << "exitted loop in main()" << endl;
 
 	//------------------------------------------------------
 	// restore the old port settings
 	if ( !arguments.silent )
-		cout << "Restoring old terminal attributes, and closing device" << endl;
+		cout << current_time() << "Restoring old terminal attributes, and closing device" << endl;
 	serial_reader.close_serial_device();
 	if ( !arguments.silent )
-		cout << endl << "done!" << endl;
+		cerr << current_time() << "done!" << endl;
 
 	// Clean up DBus things
 	dbus_pulse.disconnect();
