@@ -99,11 +99,15 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 				}
 				catch ( GError * e )
 				{
-					cout << "Main loop caught Glib error: " << endl;
-					cout << e->message << endl;
-
-					// Don't forget to free the error
-					g_error_free(e);
+					// We only really want to catch these errors:
+					// "GDBus.Error:org.freedesktop.DBus.Error.UnknownMethod"
+					// This is the error that occurs when a pulseaudio client
+					// disappears half way through set_pulse_client_volume()
+					if ( e->domain == g_dbus_error_quark() and
+					     e->code == G_DBUS_ERROR_UNKNOWN_METHOD )
+						g_error_free(e);
+					else
+						throw e;
 				}
 			}
 		}

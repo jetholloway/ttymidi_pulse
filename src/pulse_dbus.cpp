@@ -30,7 +30,11 @@ GVariant *vuint32_to_gv( const vector<uint32_t> & vuint32 );
 void throw_glib_errors( GError *e )
 {
 	if ( e != NULL )
+	{
+		cerr << "Glib error has occurred: " << e->message << endl;
+
 		throw e;
+	}
 	else
 		return;
 }
