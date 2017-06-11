@@ -40,10 +40,16 @@ void throw_glib_errors( GError *e )
 }
 
 // Connects to PulseAudio via DBus
-void DBusPulseAudio::connect()
+bool DBusPulseAudio::connect()
 {
 	GError *error = NULL;
 	string pulse_server_string;
+
+	if ( this->conn_open == true )
+	{
+		cerr << "DBusPulseAudio::connect(): Connection already open" << endl;
+		return true;
+	}
 
 	// Try environment variable
 	if ( getenv("PULSE_DBUS_SERVER") != NULL )
@@ -84,7 +90,7 @@ void DBusPulseAudio::connect()
 	if ( pulse_server_string == "" )
 	{
 		cerr << "Unable to find PulseAudio bus name" << endl;
-		exit(1);
+		return false;
 	}
 
 	cout << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
@@ -97,6 +103,9 @@ void DBusPulseAudio::connect()
 	                       NULL,  // GCancellable
 	                       &error );
 	throw_glib_errors(error);
+
+	this->conn_open = true;
+	return true;
 }
 
 //   Gets general things from PulseAudio.  This could include: clients, sinks,
@@ -307,6 +316,16 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 {
 	vector<string> clients, mpd_stream_paths;
 
+	if ( this->conn_open == false )
+	{
+		// Attempt to re-open the connection
+		if ( !this->connect() )
+		{
+			cerr << "DBusPulseAudio::set_client_volume(): the connection is closed" << endl;
+			return;
+		}
+	}
+
 	try
 	{
 		// Get the pulse clients
@@ -357,9 +376,14 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 
 void DBusPulseAudio::disconnect()
 {
-	GError *error = nullptr;
+	if ( this->conn_open == true )
+	{
+		GError *error = nullptr;
 
-	g_dbus_connection_close_sync(this->pulse_conn, nullptr, &error );
-	g_object_unref(this->pulse_conn);
-	throw_glib_errors(error);
+		g_dbus_connection_close_sync(this->pulse_conn, nullptr, &error );
+		g_object_unref(this->pulse_conn);
+		throw_glib_errors(error);
+
+		this->conn_open = false;
+	}
 }

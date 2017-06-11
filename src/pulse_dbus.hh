@@ -9,13 +9,15 @@ void throw_glib_errors( GError *e );
 
 struct DBusPulseAudio
 {
-	void connect();
+	bool connect();
 
 	void set_client_volume( unsigned int vol_in, const char *prop_name, const char *prop_val );
 
 	void disconnect();
 
 private:
+	bool conn_open = false;
+
 	GDBusConnection *pulse_conn;
 
 	std::vector<std::string> get_clients( );
