@@ -16,7 +16,7 @@ void exit_cli(int sig);
 void exit_cli(__attribute__((unused)) int sig)
 {
 	program_running = false;
-	cout << current_time() << "ttymidi closing down ... " << endl;
+	cerr << current_time() << "ttymidi closing down ... " << endl;
 }
 
 struct Fader_Program_Mapping
@@ -79,7 +79,7 @@ void main_loop(SerialMIDIReader &serial_reader)
 	}
 
 	if (!serial_reader.arguments.silent)
-		cout << current_time() << "Exited loop in main_loop()" << endl;
+		cerr << current_time() << "Exited loop in main_loop()" << endl;
 }
 
 int main(int argc, char** argv)
@@ -118,12 +118,12 @@ int main(int argc, char** argv)
 		sleep(1);
 
 	if ( !arguments.silent )
-		cout << current_time() << "exitted loop in main()" << endl;
+		cerr << current_time() << "exitted loop in main()" << endl;
 
 	//------------------------------------------------------
 	// restore the old port settings
 	if ( !arguments.silent )
-		cout << current_time() << "Restoring old terminal attributes, and closing device" << endl;
+		cerr << current_time() << "Restoring old terminal attributes, and closing device" << endl;
 	serial_reader.close_serial_device();
 	if ( !arguments.silent )
 		cerr << current_time() << "done!" << endl;

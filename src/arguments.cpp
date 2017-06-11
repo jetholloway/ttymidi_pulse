@@ -61,7 +61,7 @@ static error_t parse_opt(int key, char *arg, struct argp_state *state)
 					case 57600  : arguments->baudrate = B57600 ; break;
 					case 115200 : arguments->baudrate = B115200; break;
 					default:
-						cout << "Baud rate " << baud_temp << " is not supported." << endl;
+						cerr << "Baud rate " << baud_temp << " is not supported." << endl;
 						exit(1);
 				}
 

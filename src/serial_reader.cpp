@@ -135,7 +135,7 @@ bool SerialMIDIReader::attempt_serial_read( void *buf, size_t count )
 	{
 		if( ret_select == 0 )
 		// A timeout occurred
-			cout << current_time() << "Timeout reading from serial device" << endl;
+			cerr << current_time() << "Timeout reading from serial device" << endl;
 		else if( ret_select == -1 )
 		// An error occurred
 			cerr << current_time() << "SerialReader::attempt_serial_read(): Error from select()" << endl;
@@ -258,7 +258,7 @@ void SerialMIDIReader::main_loop_iteration_normal( )
 			msg[msglen] = 0;
 
 			if ( !arguments.silent )
-				cout << current_time() << "0xFF Non-MIDI message: " << msg << endl;
+				cerr << current_time() << "0xFF Non-MIDI message: " << msg << endl;
 		}
 		else
 		// We have received a full MIDI message

@@ -91,7 +91,7 @@ bool DBusPulseAudio::connect()
 		return false;
 	}
 
-	cout << current_time() << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
+	cerr << current_time() << "Connecting to PulseAudio bus: " << pulse_server_string << endl;
 
 	// Connect to the bus
 	this->pulse_conn = g_dbus_connection_new_for_address_sync(
