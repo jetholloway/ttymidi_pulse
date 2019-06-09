@@ -254,7 +254,7 @@ void DBusPulseAudio::set_volume( const char * path, const vector<uint32_t> & vol
 {
 	GVariant * gv = vuint32_to_gv(vols);
 	set_things_gv( this->pulse_conn, "Volume", "org.PulseAudio.Core1.Stream", path, gv );
-	// Apparently you don't have to free 'gv', as it is already freed or some shit
+	// Apparently you don't have to free 'gv', as it is already freed or something
 }
 
 // Get's a PulseAudio object's properties
@@ -272,7 +272,7 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 
 		property = g_variant_get_child_value(gv_adsab,i);
 
-		// Unpack the shitty dictionary entry
+		// Unpack the dictionary entry
 		string key, data;
 
 		if ( g_variant_n_children(property) != 2 )
@@ -284,7 +284,7 @@ map<string,string> DBusPulseAudio::get_property_list( const char *interface, con
 		key_gv  = g_variant_get_child_value(property,0);
 		data_gv = g_variant_get_child_value(property,1);
 
-		// data_gv is an array of bytes, not a fucking string, so decode that
+		// data_gv is an array of bytes, not a string, so decode that
 		// But do not include the trailing '\0'
 		for ( size_t j = 0; j < g_variant_n_children(data_gv) - 1; j++ )
 		{
