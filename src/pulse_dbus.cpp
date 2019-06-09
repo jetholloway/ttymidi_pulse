@@ -379,11 +379,47 @@ void DBusPulseAudio::set_client_volume( unsigned int vol_in, const char *prop_na
 			g_error_free(e);
 			this->conn_open = false;
 		}
+		else if ( e->domain == g_io_error_quark() and
+		          e->code == G_IO_ERROR_TIMED_OUT )
+		// "Timeout was reached"
+		/// Not sure what is causing this
+		{
+			if ( !arguments.silent )
+			{
+				cerr << current_time() << "a weird GError: " << endl;
+				cerr << "error->message: " << e->message << endl;
+				cerr << "error->domain:  g_io_error_quark() = " << e->domain << endl;
+				cerr << "error->code:    " << e->code << endl;
+				g_error_free(e);
+
+				/// Not sure if we should close the connection
+//				this->conn_open = false;
+			}
+		}
+		else if ( e->domain == g_dbus_error_quark() )
+		// Other GDBUus errors
+		{
+			cerr << current_time() << "Unhandled GError: " << endl;
+			cerr << "error->message: " << e->message << endl;
+			cerr << "error->domain:  g_dbus_error_quark()" << endl;
+			cerr << "error->code:    " << e->code << endl;
+			throw e;
+		}
+		else if ( e->domain == g_io_error_quark() )
+		// Other GIO errors
+		{
+			cerr << current_time() << "Unhandled GError: " << endl;
+			cerr << "error->message: " << e->message << endl;
+			cerr << "error->domain:  g_io_error_quark()" << endl;
+			cerr << "error->code:    " << e->code << endl;
+			throw e;
+		}
 		else
 		{
 			cerr << current_time() << "Unhandled GError: " << endl;
-			cerr << "error->domain: " << e->domain << endl;
-			cerr << "error->code: " << e->code << endl;
+			cerr << "error->message: " << e->message << endl;
+			cerr << "error->domain:  " << e->domain << endl;
+			cerr << "error->code:    " << e->code << endl;
 			throw e;
 		}
 	}
