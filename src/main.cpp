@@ -1,3 +1,22 @@
+/*
+	Copyright 2019 Jet Holloway
+
+	This file is part of ttymidi_pulse.
+
+	ttymidi_pulse is free software: you can redistribute it and/or modify
+	it under the terms of the GNU General Public License as published by
+	the Free Software Foundation, either version 3 of the License, or
+	(at your option) any later version.
+
+	ttymidi_pulse is distributed in the hope that it will be useful,
+	but WITHOUT ANY WARRANTY; without even the implied warranty of
+	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+	GNU General Public License for more details.
+
+	You should have received a copy of the GNU General Public License
+	along with ttymidi_pulse.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include "pulse_dbus.hh"
 #include "serial_reader.hh"
 #include "utils.hh"
@@ -35,8 +54,8 @@ struct MIDIHandler_Program_Volume : MIDICommandHandler
 	{
 		// MIDI Channel nr, pulse property, pulse property value
 		{0, "application.name", "Music Player Daemon"},
-		{1, "application.process.binary", "mplayer2"},
-		{2, "application.name", "CubebUtils"},
+		{1, "application.process.binary", "gnome-mpv"},
+		{2, "application.process.binary", "firefox"},
 	};
 
 	MIDIHandler_Program_Volume( DBusPulseAudio & dbus_pulse_in ) :
