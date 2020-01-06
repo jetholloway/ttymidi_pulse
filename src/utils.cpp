@@ -23,7 +23,7 @@ using namespace std;
 
 string current_time()
 {
-	/// FIXME: GCC doesn't implement "std::put_time()" until version 5
+	// Note: We could use 'put_time' from C++, but this is hardly neater as we would have to use a silly ostringstream, and it is slower anyway.
 	time_t rawtime;
 	struct tm * timeinfo;
 	char buffer[80];
