@@ -49,14 +49,15 @@ struct Fader_Program_Mapping
 struct MIDIHandler_Program_Volume : MIDICommandHandler
 {
 	DBusPulseAudio & dbus_pulse;
-	const size_t nr_rules = 4;
-	const Fader_Program_Mapping rules[4] =
+	const size_t nr_rules = 5;
+	const Fader_Program_Mapping rules[5] =
 	{
 		// MIDI Channel nr, pulse property, pulse property value
 		{0, "application.name", "Music Player Daemon"},
 		{1, "application.process.binary", "gnome-mpv"},
 		{1, "application.process.binary", "mpv"},
 		{2, "application.process.binary", "firefox"},
+		{2, "application.process.binary", "firefox-esr"},
 	};
 
 	MIDIHandler_Program_Volume( DBusPulseAudio & dbus_pulse_in ) :
