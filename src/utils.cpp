@@ -19,6 +19,8 @@
 
 #include "utils.hh"
 
+#include <ctime>
+
 using namespace std;
 
 string current_time()
